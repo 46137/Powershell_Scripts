@@ -106,11 +106,9 @@ Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently ac
     Stop-ScheduledTask -TaskName "sekurlsa" #stops task
     Disable-ScheduledTask -TaskName "sekurlsa" #disables task 
     Unregister-ScheduledTask -TaskName "sekurlsa" #deletes task
-    #three ways below to get further information on a task
+    Get-ScheduledTask -TaskName 'sekurlsa' |Select-Object * #Shows all fields.
+    (Get-ScheduledTask -TaskName 'sekurlsa').Actions
     Get-ScheduledTaskInfo sekurlsa
-    $task = Get-ScheduledTask |where TaskName -EQ 'sekurlsa'
-    $task.Actions 
-    $task | Select *
     schtasks.exe /query /tn sekurlsa /v /fo list
 
 Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
