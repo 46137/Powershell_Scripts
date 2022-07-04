@@ -1,4 +1,4 @@
-#Script intent: When you want to investigate a potentially compromised host, this can be used to invoke specific commands and save into a local running log.
+#Script intent: When you want to investigate a potentially compromised device, this can be used to invoke specific commands and save into a local running log.
 
 $comp = 'WIN10-TEST'
 #read-host -assecurestring | convertfrom-securestring | out-file C:\secure.txt <- Run this command once to generate your secure password file. 

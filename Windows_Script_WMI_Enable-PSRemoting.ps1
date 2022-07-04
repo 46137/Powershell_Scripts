@@ -1,4 +1,4 @@
-#Script Intent: If host's WinRM is down and RPC port 135 is up, it will leverage said port to enable-psremoting.
+#Script Intent: If the device's WinRM is down and RPC port 135 is up, it will leverage that port to enable-psremoting.
 
 #read-host -assecurestring | convertfrom-securestring | out-file C:\Users\Heady\Desktop\secure.txt <- Run this command once to generate your secure password file. 
 $User = "546CMT\Administrator"

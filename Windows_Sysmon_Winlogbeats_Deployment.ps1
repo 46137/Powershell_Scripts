@@ -1,4 +1,4 @@
-#Run each section individually to ensure it works correctly
+#Script intent: To setup winlogbeat and sysmon on a remote device. Run each section individually to ensure it works correctly.
 
 $ip = 192.168.5.6 #Can also use hostname
 $creds = Get-Credential 296s225PPTRG.AD\546.cmt #Domain credentials for easier deployment
