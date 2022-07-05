@@ -12,6 +12,7 @@ foreach ($h in $hosts){
     $output = Invoke-Command -ComputerName $h -Credential $Credential -ScriptBlock { #list below the commands you want to query.
 
         [System.DateTime]::now
+        [System.TimeZoneInfo]::Local
         "=== OS SUMMARY ==="
         Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory #condensed OS information
         "=== ACTIVE INTERFACES ==="
