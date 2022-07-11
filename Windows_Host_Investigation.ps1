@@ -45,13 +45,13 @@ Systeminfo
 [System.DateTime]::now
 [System.TimeZoneInfo]::Local
 Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory #condensed OS information
-Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table –AutoSize #lists 32bit programs
+Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -AutoSize #lists 32bit programs
 Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 64bit programs
 
 #USER/GROUPS
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
 Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap #finds account lastusetime, link with info from above
-    Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq 'S-1-5-21-4181923950-2520291949-3870243015-1009'} | Remove-CimInstance
+    Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq 'S-1-5-21-4181923950-2520291949-3870243015-9999'} | Remove-CimInstance #removes legacy profile info that is left after an account is deleted. 
 net user #uses net.exe which is bad.
 Get-LocalUser #basic but get-wmi above is better
     Remove-LocalUser -Name "Bob"
