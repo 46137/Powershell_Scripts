@@ -27,7 +27,7 @@ foreach ($h in $hosts){
         "=== HOSTS FILE ==="
         Get-Content C:\Windows\System32\drivers\etc\hosts
         "=== PROCESSES ==="
-        Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path
+        Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path and PPID
         "=== RUNNING SERVICES ==="
         Get-WmiObject -Class Win32_Service |Where-Object {$_.State -eq "Running"} |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows running services with path
         "=== RECENTLY CREATED TASKS ==="

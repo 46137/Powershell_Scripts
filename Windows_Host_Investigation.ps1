@@ -1,7 +1,8 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
 
-Get-Help    
 Update-Help
+Get-Help process #searching for commandlets
+Get-Command *process #shows command types of the search    
 
 #REMOTING
 Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
@@ -50,6 +51,7 @@ Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Se
 #USER/GROUPS
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
 Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap #finds account lastusetime, link with info from above
+    Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq 'S-1-5-21-4181923950-2520291949-3870243015-1009'} | Remove-CimInstance
 net user #uses net.exe which is bad.
 Get-LocalUser #basic but get-wmi above is better
     Remove-LocalUser -Name "Bob"
