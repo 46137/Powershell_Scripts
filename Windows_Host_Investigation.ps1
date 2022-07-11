@@ -1,5 +1,8 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
 
+Get-Help    
+Update-Help
+
 #REMOTING
 Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
 Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM port related to WinRM are open on that endpoint, 5986 for HTTPS
