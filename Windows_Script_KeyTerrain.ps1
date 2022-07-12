@@ -52,4 +52,3 @@ foreach ($h in $hosts){
     $output | Out-File -Append C:\Users\heady\Desktop\$DTG-$h-KeyTerrain.txt
     
 }
-Get-PSSession |Remove-PSSession #removes all the sessions.

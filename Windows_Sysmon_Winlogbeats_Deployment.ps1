@@ -27,3 +27,4 @@ Invoke-Command -ComputerName $ip -Credential $creds -ScriptBlock {
     Start-Process 'C:\Sysmon.exe' -accepteula -i 'C:\Sysmon-Config.xml'
     Get-Service sysmon
 }
+Get-PSSession | Remove-PSSession #removes all sessions at the end
