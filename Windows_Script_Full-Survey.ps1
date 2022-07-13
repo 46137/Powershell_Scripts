@@ -6,7 +6,7 @@ function Get-FullSurvey(){
     Setup:
     Import-Module .\Windows_Script_Full-Survey.ps1 -Force
     
-    Examples:
+    .EXAMPLE
     (Get-FullSurvey).osinfo
     #>
     function Get-OSInfo(){
