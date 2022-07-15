@@ -10,7 +10,18 @@ function Get-FullSurvey(){
     Import-Module .\Windows_Script_Full-Survey.ps1 -Force
     
     .EXAMPLE
-    (Get-FullSurvey).osinfo
+    Running the script to list all the categories:
+    Get-FullSurvey
+    
+    Running the script for a category:
+    (Get-FullSurvey).sysinfo
+
+    Running the script for a sub-category:
+    (Get-FullSurvey).sysinfo.timezone
+
+    Running the script into a variable for static analysis:
+    $fullsurvey = Get-FullSurvey
+    $fullsurvey.sysinfo.timezone
     #>
     function Get-SysInfo(){
         $datetime = [System.DateTime]::now
