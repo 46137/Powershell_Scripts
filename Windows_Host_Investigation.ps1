@@ -71,8 +71,10 @@ Get-GPO
 
 #IP/CONNECTIONS/NETWORK
 ipconfig /all 
+Get-NetIPConfiguration -Detailed # shows all fields.
 Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
 Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # shows all interfaces
+Get-NetIPAddress
 ipconfig /displaydns #shows history of the dns resolver
 Get-DnsClientCache |Format-Table -Wrap
 Get-NetIPInterface #shows ip interfaces
@@ -80,7 +82,8 @@ Get-NetIPInterface #shows ip interfaces
 
 netstat -nao
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
-Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} #looking for established or listen
+Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process
+Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
     tasklist /svc |findstr 21664 #shows further information on the suspect PID
 Get-Content C:\Windows\System32\drivers\etc\hosts
 Get-Content C:\Windows\System32\drivers\etc\services

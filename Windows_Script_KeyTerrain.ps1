@@ -23,9 +23,7 @@ foreach ($h in $hosts){
         "=== RECENTLY USED ACCOUNTS ==="
         Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Select-Object -First 5 |Format-Table -Wrap #finds account lastusetime
         "=== CONNECTIONS (ESTABLISHED/LISTEN) ==="
-        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} #looking for established or listen
-        "=== HOSTS FILE ==="
-        Get-Content C:\Windows\System32\drivers\etc\hosts
+        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process
         "=== PROCESSES ==="
         Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path and PPID
         "=== RUNNING SERVICES ==="
@@ -34,6 +32,8 @@ foreach ($h in $hosts){
         Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
         "=== RECENTLY RUN TASKS ==="
         Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
+        "=== HOSTS FILE ==="
+        Get-Content C:\Windows\System32\drivers\etc\hosts
         "=== REGISTRY RUNKEYS ==="
         Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
         Get-ItemProperty -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run

@@ -3,8 +3,11 @@ function Get-FullSurvey(){
     <#
     .SYNOPSIS
     Tasks:
-    Get-Net (ipconfig,activeinterfaces,netstat,processes)
+    Get-Net (netstat-full,netstat-established/listen,processes,mainwindow)
     Get-UserGroups (adusers,adgroups,adgroupadmins)
+    Get-ServiceTask (services-full,services-running,tasks-full,tasks-rec-created,tasks-rec-runned)
+    get-art (hostsfile,run,tempfiles,tempfilesauth,usb)
+    get-events 
     .DESCRIPTION
     Setup:
     Import-Module .\Windows_Script_Full-Survey.ps1 -Force
@@ -93,6 +96,26 @@ function Get-FullSurvey(){
         # Returns the hashtable.
         return $return_data
     }
+    function Get-NetInfo(){
+        $ipd = Get-NetIPConfiguration -Detailed
+        $ips = Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
+        $ipa = Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
+        $nsd = Get-NetTCPConnection 
+        $nss = Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
+
+        # Creates an empty hashtable.
+        $return_data = @{}
+        # Adding the collected data to the hashtable.
+        $return_data.Add("IPDetailed", $ipd)
+        $return_data.Add("IPSimple", $ips)
+        $return_data.Add("IPActive", $ipa)
+        $return_data.Add("ConnDetailed", $nsd)
+        $return_data.Add("ConnSimple", $nss)
+
+        # Returns the hashtable.
+        return $return_data
+    }
+
 
     # Creates an empty hashtable for the overall results.
     $results = @{}
@@ -101,6 +124,8 @@ function Get-FullSurvey(){
     $results.Add("SysInfo", $sysinfo)
     $usergroups = Get-UserGroups
     $results.Add("UserGroups", $usergroups)
+    $net = Get-NetInfo
+    $results.Add("NetInfo", $net)
     # Returns the hashtable.
     return $results    
 }
