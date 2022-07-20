@@ -3,7 +3,6 @@ function Get-FullSurvey(){
     <#
     .SYNOPSIS
     Tasks:
-    Get-Net (netstat-full,netstat-established/listen,processes,mainwindow)
     Get-UserGroups (adusers,adgroups,adgroupadmins)
     Get-ServiceTask (services-full,services-running,tasks-full,tasks-rec-created,tasks-rec-runned)
     get-art (hostsfile,run,tempfiles,tempfilesauth,usb)
@@ -20,7 +19,7 @@ function Get-FullSurvey(){
     (Get-FullSurvey).sysinfo
 
     Running the script for a sub-category:
-    (Get-FullSurvey).sysinfo.timezone
+    (Get-FullSurvey).sysinfo.installedapps64 |ft
 
     Running the script into a variable for static analysis:
     $fullsurvey = Get-FullSurvey
@@ -31,8 +30,8 @@ function Get-FullSurvey(){
         $timezone = [System.TimeZoneInfo]::Local
         $osinfo = Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory
         $adinfo = Get-ADDomain
-        $apps32 = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap
-        $apps64 = Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap
+        $apps32 = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending 
+        $apps64 = Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending 
 
         # Creates an empty hashtable.
         $return_data = @{}
@@ -48,7 +47,7 @@ function Get-FullSurvey(){
     }
     
     function Get-UserGroups(){
-        $accounts = Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
+        $accounts = Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID
         $lg = Get-LocalGroup
         $la = Get-LocalGroupMember -Group Administrators |Select-Object -Property ObjectClass, Name, PrincipalSource, SID
         function Get-LastLogon {
@@ -102,6 +101,11 @@ function Get-FullSurvey(){
         $ipa = Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
         $nsd = Get-NetTCPConnection 
         $nss = Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
+        $pd = Get-Process
+        $ps = Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath
+        $pr = Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending
+        $pw = Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle
+
 
         # Creates an empty hashtable.
         $return_data = @{}
@@ -111,11 +115,26 @@ function Get-FullSurvey(){
         $return_data.Add("IPActive", $ipa)
         $return_data.Add("ConnDetailed", $nsd)
         $return_data.Add("ConnSimple", $nss)
+        $return_data.Add("ProcDetailed", $pd)
+        $return_data.Add("ProcSimple", $ps)
+        $return_data.Add("ProcRecent", $pr)
+        $return_data.Add("ProcWindow", $pw)
 
         # Returns the hashtable.
         return $return_data
     }
 
+    function Get-ServiceTask(){
+        $datetime = [System.DateTime]::now
+
+        # Creates an empty hashtable.
+        $return_data = @{}
+        # Adding the collected data to the hashtable.
+        $return_data.Add("DateTime", $datetime)
+
+        # Returns the hashtable.
+        return $return_data
+    }
 
     # Creates an empty hashtable for the overall results.
     $results = @{}
@@ -126,6 +145,8 @@ function Get-FullSurvey(){
     $results.Add("UserGroups", $usergroups)
     $net = Get-NetInfo
     $results.Add("NetInfo", $net)
+    $st = Get-ServiceTask
+    $results.Add("ServiceTask", $st)
     # Returns the hashtable.
     return $results    
 }

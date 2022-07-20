@@ -99,7 +99,8 @@ Get-Process
     Stop-Process -Name "notepad"
     Stop-Process -Id 18252
 Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path
-Get-Process |Where-Object {$_.mainWindowTitle} | Format-Table Id, Name, mainWindowtitle -AutoSize #gets all processes that have a main window
+Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table # Recent processes with path.
+Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle #gets all processes that have a main window
 
 Get-Service |Format-Table -Wrap
 Get-Service |Where-Object {$_.Status -eq "Running"} |Format-Table -Wrap
