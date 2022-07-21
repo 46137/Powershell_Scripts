@@ -3,13 +3,16 @@ function Get-FullSurvey(){
     <#
     .SYNOPSIS
     Tasks:
-    Get-UserGroups (adusers,adgroups,adgroupadmins)
-    Get-ServiceTask (services-full,services-running,tasks-full,tasks-rec-created,tasks-rec-runned)
+    Get-UserGroups (adusers,adgroups,adgroupadmins,countfailedlogonperuser)
     get-art (hostsfile,run,tempfiles,tempfilesauth,usb)
     get-events 
     .DESCRIPTION
     Setup:
     Import-Module .\Windows_Script_Full-Survey.ps1 -Force
+
+    Some commands will have two versions:
+        raw command will end in r
+        filtered command will end in f
     
     .EXAMPLE
     Running the script to list all the categories:
@@ -96,41 +99,50 @@ function Get-FullSurvey(){
         return $return_data
     }
     function Get-NetInfo(){
-        $ipd = Get-NetIPConfiguration -Detailed
-        $ips = Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
+        $ipr = Get-NetIPConfiguration -Detailed
+        $ipf = Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
         $ipa = Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway
-        $nsd = Get-NetTCPConnection 
-        $nss = Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
-        $pd = Get-Process
-        $ps = Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath
-        $pr = Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending
+        $nsr = Get-NetTCPConnection 
+        $nsf = Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
+        $pr = Get-Process
+        $pf = Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath
+        $prec = Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending
         $pw = Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle
 
 
         # Creates an empty hashtable.
         $return_data = @{}
         # Adding the collected data to the hashtable.
-        $return_data.Add("IPDetailed", $ipd)
-        $return_data.Add("IPSimple", $ips)
-        $return_data.Add("IPActive", $ipa)
-        $return_data.Add("ConnDetailed", $nsd)
-        $return_data.Add("ConnSimple", $nss)
-        $return_data.Add("ProcDetailed", $pd)
-        $return_data.Add("ProcSimple", $ps)
-        $return_data.Add("ProcRecent", $pr)
-        $return_data.Add("ProcWindow", $pw)
+        $return_data.Add("IPInfoR", $ipr)
+        $return_data.Add("IPInfoF", $ipf)
+        $return_data.Add("IPInfoA", $ipa)
+        $return_data.Add("ConnectionR", $nsr)
+        $return_data.Add("ConnectionF", $nsf)
+        $return_data.Add("ProcessR", $pr)
+        $return_data.Add("ProcessF", $pf)
+        $return_data.Add("ProcessRecent", $prec)
+        $return_data.Add("ProcessWindow", $pw)
 
         # Returns the hashtable.
         return $return_data
     }
 
     function Get-ServiceTask(){
-        $datetime = [System.DateTime]::now
+        $serr = Get-Service |Sort-Object -Property Status -Descending
+        $serf = Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State
+        $taskr = Get-ScheduledTask
+        $taskc = Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending
+        $taskrun = Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending
 
         # Creates an empty hashtable.
         $return_data = @{}
         # Adding the collected data to the hashtable.
-        $return_data.Add("DateTime", $datetime)
+        $return_data.Add("ServiceF", $serf)
+        $return_data.Add("ServiceR", $serr)
+        $return_data.Add("TaskR", $taskr)
+        $return_data.Add("TaskCreated", $taskc)
+        $return_data.Add("TaskRun", $taskrun)
+
 
         # Returns the hashtable.
         return $return_data

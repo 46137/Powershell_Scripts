@@ -106,7 +106,7 @@ Get-Service |Format-Table -Wrap
 Get-Service |Where-Object {$_.Status -eq "Running"} |Format-Table -Wrap
 Get-Service "wmi*"
     Stop-Service -Name "sysmon"
-Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows additional path
+Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 
 #TASKS/REGISTRY
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
