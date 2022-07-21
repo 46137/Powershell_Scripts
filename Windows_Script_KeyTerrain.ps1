@@ -23,11 +23,11 @@ foreach ($h in $hosts){
         "=== RECENTLY USED ACCOUNTS ==="
         Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Select-Object -First 5 |Format-Table -Wrap #finds account lastusetime
         "=== CONNECTIONS (ESTABLISHED/LISTEN) ==="
-        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process
+        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table       
         "=== PROCESSES ==="
-        Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path and PPID
+        Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table # Recent processes with path.
         "=== RUNNING SERVICES ==="
-        Get-WmiObject -Class Win32_Service |Where-Object {$_.State -eq "Running"} |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows running services with path
+        Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
         "=== RECENTLY CREATED TASKS ==="
         Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
         "=== RECENTLY RUN TASKS ==="
