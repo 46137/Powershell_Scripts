@@ -41,12 +41,28 @@ Invoke-Command -ComputerName 172.16.1.51 -Credential Administrator -ScriptBlock 
 whoami
 Get-ComputerInfo
 Systeminfo
-(Get-ADComputer -Filter *).name #lists all the hostnames on the DC.
 [System.DateTime]::now
 [System.TimeZoneInfo]::Local
 Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory #condensed OS information
 Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -AutoSize #lists 32bit programs
 Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 64bit programs
+
+#ACTIVE DIRECTORY
+Get-ADDomain #Shows information on the domain, inc DNS name.
+(Get-ADComputer -Filter *).name # lists all the hostnames.
+get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs
+(Get-ADUser -Filter *).name # list names of all domain accounts.
+
+Get-ADUser -Filter * #for all domain accounts
+Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for accounts starting with A
+    Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
+    Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
+    Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
+    Remove-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
+
+Get-AdGroup -Filter * # lists all AD groups
+Get-ADGroupMember -Identity 'Administrators'
+Get-GPO
 
 #USER/GROUPS
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
@@ -55,19 +71,9 @@ Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,loca
 net user #uses net.exe which is bad.
 Get-LocalUser #basic but get-wmi above is better
     Remove-LocalUser -Name "Bob"
-Get-ADUser -Filter * #for all domain accounts
-Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for accounts starting with A
-    Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
-    Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
-    Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
-    Remove-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
 net use # checks for shared resources like mapped drives
 Get-LocalGroupMember -Group Administrators |Select-Object -Property ObjectClass, Name, PrincipalSource, SID #detailed
 net localgroup "Administrators"
-Get-AdGroup -Filter * # lists all AD groups
-Get-ADGroupMember -Identity 'Administrators'
-Get-ADDomain #Shows information on the domain.
-Get-GPO
 
 #IP/CONNECTIONS/NETWORK
 ipconfig /all 
