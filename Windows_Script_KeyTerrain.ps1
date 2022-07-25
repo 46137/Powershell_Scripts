@@ -1,4 +1,4 @@
-#Script intent: If you're given keyterrain to monitor daily throughout an exercise, this will create a local output of each host to look for anomalies.
+#Script intent: If you're given keyterrain to survey daily throughout an exercise, this will create a local output of each host to look for anomalies.
 
 $hosts = 'WIN10-TEST','DESKTOP-9R76OA2' #List hosts or ips.
 #read-host -assecurestring | convertfrom-securestring | out-file C:\Users\Heady\Desktop\secure.txt <- Run this command once to generate your secure password file. 
@@ -18,12 +18,14 @@ foreach ($h in $hosts){
         "=== ACTIVE INTERFACES ==="
         Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
         "=== RECENTLY INSTALLED APPLICATIONS ==="
-        Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending|Select-Object -First 5 |Format-Table -AutoSize #lists 5 most recently installed 32bit programs
-        Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Select-Object -First 5 |Format-Table -Wrap #lists 5 most recently installed 64bit programs
+        Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 5 most recently installed 32bit programs
+        Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 5 most recently installed 64bit programs
         "=== RECENTLY USED ACCOUNTS ==="
-        Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Select-Object -First 5 |Format-Table -Wrap #finds account lastusetime
+        Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap #finds account lastusetime
+        "=== ACCOUNTS DETAILS ==="
+        Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
         "=== CONNECTIONS (ESTABLISHED/LISTEN) ==="
-        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table       
+        Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process and creation time      
         "=== PROCESSES ==="
         Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table # Recent processes with path.
         "=== RUNNING SERVICES ==="
@@ -49,6 +51,6 @@ foreach ($h in $hosts){
     
     }
     $output
-    $output | Out-File -Append C:\Users\heady\Desktop\$DTG-$h-KeyTerrain.txt
+    $output | Out-File -Append C:\Users\heady\Desktop\$DTG-$h-Survey.txt
     
 }
