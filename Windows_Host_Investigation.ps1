@@ -1,5 +1,14 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
 
+<#Tasks:
+- Test holly AD command
+- Add section for get-mail (mailserver)
+- Recycle bin command to get files from all users (SIDS)
+- Network shares ADMIN$, IPC$, c$
+- Combine recently access files commands
+- Prefetch files
+#>
+
 Update-Help
 Get-Help process #searching for commandlets
 Get-Command *process #shows command types of the search    
@@ -158,21 +167,25 @@ Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object
 Get-FileShare
 Get-SmbShare
 
+#Recycle Bin files
+#Currently one run for the local user, need to determine how to choose users.
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |select @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Shows Origional path
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Shows modify date
+Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
+Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
+
+
 # Recently accessed Windows files.
 # The times for a link file differ to the actual file times. The creation time of a .lnk file is for when it is first used. If the modification time is different to the creation time then the file has been used more than once.
 # No point using the $env:APPDATA as it will default to account creds you're using so you won't see the recent files of the target user. Fill in the target username as required.
 Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Windows\Recent |Select-Object -Property CreationTime,LastAccessTime,LastWriteTime,Length,Name |Sort-Object -Property LastAccessTime -Descending |Format-Table -Wrap
-# Below uses the above .lnk fullname information ($linkfiles) and puts it into new object ($WScript) to find the .lnk files targetpath.
-$linkfiles_windows = Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Windows\Recent |Sort-Object -Property LastAccessTime -Descending
-$WScript_windows = New-Object -ComObject WScript.Shell
-$linkfiles_windows | ForEach-Object {$WScript_windows.CreateShortcut($_.FullName).TargetPath}
+# Below uses the above .lnk fullname information ($linkfiles) and creates a new object to find the .lnk files targetpath.
+Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Windows\Recent |ForEach-Object {(New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).TargetPath}
 
 # Recently accessed Office files.
 Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recent |Select-Object -Property CreationTime,LastAccessTime,LastWriteTime,Length,Name |Sort-Object -Property LastWriteTime -Descending |Format-Table -Wrap
-# Below uses the above .lnk fullname information ($linkfiles) and puts it into new object ($WScript) to find the .lnk files targetpath.
-$linkfiles_office = Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recent |Sort-Object -Property LastAccessTime -Descending
-$WScript_office = New-Object -ComObject WScript.Shell
-$linkfiles_office | ForEach-Object {$WScript_office.CreateShortcut($_.FullName).TargetPath}
+# Below uses the above .lnk fullname information ($linkfiles) and creates a new object to find the .lnk files targetpath.
+Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recent |ForEach-Object {(New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).TargetPath}
 
 #EVENTS
 Get-EventLog -list

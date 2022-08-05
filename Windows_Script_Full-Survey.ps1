@@ -3,9 +3,22 @@ function Get-FullSurvey(){
     <#
     .SYNOPSIS
     Tasks:
-    Get-UserGroups (adusers,adgroups,adgroupadmins,countfailedlogonperuser)
-    get-art (hostsfile,run,tempfiles,tempfilesauth,usb)
-    get-events 
+    - Get-UserGroups (adusers,adgroups,adgroupadmins,countfailedlogonperuser)
+    - get-art (hostsfile,run,tempfiles,tempfilesauth,usb)
+    - get-events 
+    - test the following invoking method:
+
+    $scriptblock = {
+    function Get-RecycleBinItems 
+    {
+        (New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |
+            Select-Object Name, Size, Path
+    }
+    Get-RecycleBinItems
+    }   
+
+    Invoke-Command -ComputerName $computer -ScriptBlock $scriptblock 
+
     .DESCRIPTION
     Setup:
     Import-Module .\Windows_Script_Full-Survey.ps1 -Force
