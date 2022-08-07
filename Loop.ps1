@@ -1,3 +1,7 @@
+#remove ping from test-netconnection
+#echo ping result
+#add other subnets
+
 
 $Subnet = '192.168.0' #Change subnet
 $DTG = Get-Date -Format "yyMMddHHmm"
