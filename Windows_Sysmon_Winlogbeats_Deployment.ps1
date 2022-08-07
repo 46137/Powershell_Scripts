@@ -1,6 +1,13 @@
 #Script intent: To setup winlogbeat and sysmon on a remote device. Run the winlogbeat section first, then sysmon to ensure it works correctly.
+<#
+Tasks:
+- Delete files at the end
+- Add pings sweep
 
-$ip = 192.168.5.6 #Can also use hostname
+#>
+
+
+$ip = '192.168.5.6' #Can also use hostname
 $creds = Get-Credential 296s225PPTRG.AD\546.cmt #Domain credentials for easier deployment
 $session = New-PSSession -ComputerName $ip -Credential $creds
 

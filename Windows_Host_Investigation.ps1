@@ -3,7 +3,7 @@
 <#Tasks:
 - Test holly AD command
 - Add section for get-mail (mailserver)
-- Recycle bin command to get files from all users (SIDS)
+- Recycle bin command to get files from all users (SIDS), hash bin files?
 - Network shares ADMIN$, IPC$, c$
 - Combine recently access files commands
 - Prefetch files
@@ -11,9 +11,12 @@
 
 Update-Help
 Get-Help process #searching for commandlets
-Get-Command *process #shows command types of the search    
+Get-Command *process #shows command types of the search
+(Measure-Command{Get-ComputerInfo}).TotalSeconds #show how long it takes to run a command    
+(Get-Host).version #lists the powershell version
 
 #REMOTING
+1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue} #VERY slow ping sweep.
 Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
 Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM port related to WinRM are open on that endpoint, 5986 for HTTPS
     wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
@@ -98,8 +101,8 @@ Get-NetIPInterface #shows ip interfaces
 
 netstat -nao
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
-Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process and creation time
-Get-NetTCPConnection |Where-Object {$_.state -match "listen" -or $_.state -match "establish" -and $_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
+Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #looking for established or listen & adds process and creation time
+Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
     tasklist /svc |findstr 21664 #shows further information on the suspect PID
 Get-Content C:\Windows\System32\drivers\etc\hosts
 Get-Content C:\Windows\System32\drivers\etc\services
@@ -169,7 +172,7 @@ Get-SmbShare
 
 #Recycle Bin files
 #Currently one run for the local user, need to determine how to choose users.
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |select @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Shows Origional path
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Shows Origional path
 (New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Shows modify date
 Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
 Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
