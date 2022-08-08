@@ -19,6 +19,7 @@ Get-Command *process #shows command types of the search
 1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue} #VERY slow ping sweep.
 Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
 Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM port related to WinRM are open on that endpoint, 5986 for HTTPS
+New-Object System.Net.Sockets.TcpClient -ArgumentList 172.16.12.10,5985 #Quicker than Test-NetConnection
     wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
     wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
     wmic /NODE:"ServerName" /USER:"yourdomain\administrator" OS GET Name #shows OS name, can use as a test
@@ -97,7 +98,7 @@ Get-NetIPAddress
 ipconfig /displaydns #shows history of the dns resolver
 Get-DnsClientCache |Format-Table -Wrap
 Get-NetIPInterface #shows ip interfaces
-    Get-NetRoute -InterfaceIndex 8 #shows routing for chosen interface
+    Get-NetRoute -InterfaceIndex 5 #shows routing for chosen interface
 
 netstat -nao
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
@@ -127,7 +128,7 @@ Get-Service "wmi*"
     Stop-Service -Name "sysmon"
 Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 
-#TASKS/REGISTRY
+#TASKS/REGISTRY/SUB-EVENTS
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
 Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
 Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently active tasks, keep in mind ready tasks also
@@ -144,11 +145,24 @@ Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
+Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query property.
+Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
+Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
+
 #USB/FILE SEARCH/FILE INFORMATION/RECENT FILES
 #Common paths to look at for malicious files:
     #C:\Windows\Temp
     #C:\Users\Administrator\Downloads
     #C:\Users\Administrator\AppData\Local\Temp
+
+(Get-ChildItem -Path C:\Windows\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
+Get-ChildItem -Path C:\Windows\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
+Get-AuthenticodeSignature -FilePath C:\Windows\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid
+(Get-ChildItem -Path C:\Windows\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
+Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
+Get-AuthenticodeSignature -FilePath C:\Users\Administrator\AppData\Local\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid 
+(Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
+
 Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap #USB connections
 Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName #USB running connections
 
@@ -176,7 +190,8 @@ Get-SmbShare
 (New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Shows modify date
 Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
 Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
-
+Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
+(Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
 
 # Recently accessed Windows files.
 # The times for a link file differ to the actual file times. The creation time of a .lnk file is for when it is first used. If the modification time is different to the creation time then the file has been used more than once.
