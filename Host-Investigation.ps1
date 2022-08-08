@@ -9,6 +9,10 @@
 - Prefetch files
 #>
 
+#add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.fr.de,*.uan.ao,*.pikapika.ph,*.jobkorea.co.kr,*.internetdownloadmanager.in.th" 
+#set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.fr.de,*.uan.ao,*.pikapika.ph,*.jobkorea.co.kr,*.internetdownloadmanager.in.th,*.bigarsefans.com" #adding dns blocks
+#get-dnsserverqueryresolutionpolicy
+
 Update-Help
 Get-Help process #searching for commandlets
 Get-Command *process #shows command types of the search
