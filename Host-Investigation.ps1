@@ -69,6 +69,7 @@ Get-ADDomain #Shows information on the domain, inc DNS name.
 (Get-ADComputer -Filter *).name # lists all the hostnames.
 get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs
 (Get-ADUser -Filter *).name # list names of all domain accounts.
+Get-ADUser -Filter * -Properties * |Select-Object -Property Name, WhenCreated | Sort-Object WhenCreated
 Get-ADComputer -filter 'OperatingSystem -like "*"' -properties Name, OperatingSystem, OperatingSystemVersion, IPv4Address |select-object -property Name, OperatingSystem, OperatingSystemVersion, IPv4Address
 
 Get-ADUser -Filter * #for all domain accounts
