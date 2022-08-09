@@ -150,9 +150,19 @@ Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
+#WMI EVENT SUBSCRIPTION PERSISTENCE
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query property.
 Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
+
+#PRINTNIGHTMARE PERSISTENCE AND REMOVAL
+Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
+Get-smbopenfile #further info  
+(Get-ChildItem -Path 'C:\Windows\system32\spool\DRIVERS\x64\3\' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Hashes all the driver files
+    #Might need to get-service spooler |stop-service
+    remove-printerdriver -name HP2057 #removes the driver
+    get-smbopenfile |where-object {$_.path -like "*NIGHTMARE.DLL" } |close-smbopenfile #closes smb connections linked to the dll drivers so we can delete the file
+    remove-item -Path C:\Windows\system32\spool\DRIVERS\x64\3\nightmare.dll -Force #removes the bad DLL
 
 #USB/FILE SEARCH/FILE INFORMATION/RECENT FILES
 #Common paths to look at for malicious files:
