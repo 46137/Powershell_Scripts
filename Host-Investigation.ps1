@@ -155,7 +155,7 @@ Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query
 Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
 
-#PRINTNIGHTMARE PERSISTENCE AND REMOVAL
+#PRINTNIGHTMARE PRIV-ESC AND REMOVAL
 Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
 Get-smbopenfile #further info  
 (Get-ChildItem -Path 'C:\Windows\system32\spool\DRIVERS\x64\3\' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Hashes all the driver files
