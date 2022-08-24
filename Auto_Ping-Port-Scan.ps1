@@ -1,7 +1,14 @@
 #Script intent: To quicky ping sweep the network and determine if remoting ports are up.
-
 $ErrorActionPreference = 'SilentlyContinue' # Disables errors. Errors will occur on failed ports.
-$Subnets = '192.168.65','192.168.0' #Change subnets as required.
+$DTG = Get-Date -Format "yyMMdd"
+
+#Changing Variables
+$Subnets = '192.168.0','192.168.65'#,'172.16.10','172.16.11'
+$Ports = '5985','135'#,'22','3389'
+$FolderPath = "C:\Users\heady\Desktop"
+
+#Creates an array of active hosts via ICMP.
+$Up_Hosts = @()
 foreach ($Subnet in $Subnets){
     $IPs = 1..254 | ForEach-Object {"$($Subnet).$_"}
     $Ping = $IPs|ForEach-Object {
@@ -9,22 +16,27 @@ foreach ($Subnet in $Subnets){
         [Net.NetworkInformation.Ping]::New().SendPingAsync($_, 250) #PowerShell v5
     }
     [Threading.Tasks.Task]::WaitAll($Ping)
-    $UPHosts = $Ping.Result | ForEach-Object {if($_.Status -eq 'Success'){$_}} #Selects only the up hosts.
-    [System.DateTime]::now | Out-File -Append C:\Users\heady\Desktop\$Subnet-PingSweep.txt #Save current time to associate with the output.
-    $UPHosts |Select-Object -Property Address,Status,RoundtripTime | Out-File -Append C:\Users\heady\Desktop\$Subnet-PingSweep.txt #Saves the ping output.
-    $UPHosts |Select-Object -Property Address,Status,RoundtripTime #Lists the ping output to the screen.
-    $Address = $UPHosts |ForEach-Object {$_.Address.IPAddressToString}
-#Everything above will get a string of the up hosts.
-    $Ports = '5985'#,'135','22','3389' #Change ports as required.
-    $Address |ForEach-Object {
-        foreach ($Port in $Ports){
-            $Socket = New-Object System.Net.Sockets.TcpClient($_, $Port)
-            If($Socket.Connected){
-                "$_ - Open Port: $Port" 
-                [System.DateTime]::now | Out-File -Append C:\Users\heady\Desktop\$_-PortScan.txt
-                "$_ - Open Port: $Port" | Out-File -Append C:\Users\heady\Desktop\$_-PortScan.txt
-                $Socket.Close()
-            }
+    $Ping.Result | ForEach-Object {
+        if($_.Status -eq 'Success'){
+            $Up_Hosts += $_.Address.IPAddressToString
         }
+    }
+}
+$Up_Hosts |Tee-Object -FilePath $FolderPath\$DTG-Hosts-Ping.txt
+
+#Using active hosts, checks if ports are open.
+$Ports |ForEach-Object {
+$Open_Port = @()    
+    foreach ($H in $Up_Hosts){
+        $Socket = New-Object System.Net.Sockets.TcpClient($H, $_)
+        If($Socket.Connected){
+            $Open_Port += $H
+            "$H - Open Port: $_"
+            $Socket.Close()
+        }
+    }
+    #Added 'if' statement so it doesn't create empty files.
+    if ($Open_Port -ne $null) {
+        $Open_Port |Out-File -FilePath $FolderPath\$DTG-Hosts-"Port-$_".txt
     }
 }
