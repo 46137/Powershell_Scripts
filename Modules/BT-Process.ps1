@@ -11,7 +11,7 @@ function BT-Process(){
     #Raw data.
     $proc = Get-WmiObject -Class win32_process
     
-    # Creating an array to store filtered scheduled task information from each task.
+    # Creating an array to store filtered information.
     $filtered_proc = @()
     $proc |ForEach-Object {
         $return_data = New-Object -TypeName PSObject |Select-Object -Property CreationDate,PID,PPID,Name,ExecutablePath,ExecutableAuthCode,CommandLine

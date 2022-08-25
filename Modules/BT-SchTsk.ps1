@@ -14,10 +14,11 @@ function BT-SchTsk(){
     # Creating an array to store filtered scheduled task information from each task.
     $filtered_tasks = @()
     $schtsk |ForEach-Object {
-        $return_data = New-Object -TypeName PSObject |Select-Object -Property State,TaskName,LastRunTime,CreationDate,TaskPath,ExecutablePath,ExecutableAuthCode
+        $return_data = New-Object -TypeName PSObject |Select-Object -Property State,TaskName,LastRunTime,NextRunTime,CreationDate,TaskPath,ExecutablePath,ExecutableAuthCode
         $return_data.State = $_.State
         $return_data.TaskName = $_.TaskName
         $return_data.LastRunTime = ($_ |Get-ScheduledTaskInfo).LastRunTime
+        $return_data.NextRunTime = ($_ |Get-ScheduledTaskInfo).NextRunTime
         $return_data.CreationDate = $_.Date
         $return_data.TaskPath = $_.TaskPath
         $return_data.ExecutablePath = ($_.Actions).execute

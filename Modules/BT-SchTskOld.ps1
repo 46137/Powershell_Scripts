@@ -31,13 +31,13 @@ function BT-SchTskOld{
             }
             else{
                 # For this line of data a new object is created, which contains new properties 'Task_Path,Task_Name,Next_Run_Time,Status'. 
-                $Tasks_Entry = New-Object -TypeName PSObject |Select-Object -Property Task_Path,Task_Name,Next_Run_Time,Status
+                $Tasks_Entry = New-Object -TypeName PSObject |Select-Object -Property TaskPath,Name,NextRunTime,Status
                 # Tells the property 'Task_Name' within the '$Tasks_Entry' object to select the data starting at character '0' for the next '41' characters and trim the rest. (start,keep)
-                $Tasks_Entry.Task_Name = $Line.substring(0,41).Trim();
-                $Tasks_Entry.Next_Run_Time = $Line.substring(41,20).Trim();
+                $Tasks_Entry.Name = $Line.substring(0,41).Trim();
+                $Tasks_Entry.NextRunTime = $Line.substring(41,20).Trim();
                 $Tasks_Entry.Status = $Line.substring(64,8).Trim();
                 # Tells the property 'Task_Path' within the '$Tasks_Entry' object to select the data stored within the '$Folder' variable from the 'if' statement.
-                $Tasks_Entry.Task_Path = $Folder;
+                $Tasks_Entry.TaskPath = $Folder;
                 # Adds each new '$Tasks_Entry' object into the '$Tasks_Entries' array.
                 $Tasks_Entries += $Tasks_Entry
                 # Then the loop starts again.
