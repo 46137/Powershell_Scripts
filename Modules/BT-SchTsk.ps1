@@ -14,7 +14,7 @@ function BT-SchTsk(){
     # Creating an array to store filtered scheduled task information from each task.
     $filtered_tasks = @()
     $schtsk |ForEach-Object {
-        $return_data = New-Object -TypeName PSObject |Select-Object -Property State,TaskName,LastRunTime,NextRunTime,CreationDate,TaskPath,ExecutablePath,ExecutableAuthCode
+        $return_data = New-Object -TypeName PSObject |Select-Object -Property State,TaskName,LastRunTime,NextRunTime,CreationDate,TaskPath,ExecutablePath,ExecutableAuthCode,FileHashSHA1,FileHashSHA256
         $return_data.State = $_.State
         $return_data.TaskName = $_.TaskName
         $return_data.LastRunTime = ($_ |Get-ScheduledTaskInfo).LastRunTime
@@ -23,6 +23,8 @@ function BT-SchTsk(){
         $return_data.TaskPath = $_.TaskPath
         $return_data.ExecutablePath = ($_.Actions).execute
         $return_data.ExecutableAuthCode = (Get-AuthenticodeSignature -FilePath $return_data.ExecutablePath).Status
+        $return_data.FileHashSHA1 = (Get-FileHash -Algorithm SHA1 $return_data.ExecutablePath).Hash
+        $return_data.FileHashSHA256 = (Get-FileHash -Algorithm SHA256 $return_data.ExecutablePath).Hash
         $filtered_tasks += $return_data
     }
     $filtered_tasks
