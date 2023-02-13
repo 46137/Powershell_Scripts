@@ -104,6 +104,7 @@ Get-NetIPConfiguration -Detailed # shows all fields.
 Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
 Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # shows all interfaces
 Get-NetIPAddress
+Get-NetAdapter # shows interfaces including MAC addresses.
 ipconfig /displaydns #shows history of the dns resolver
 Get-DnsClientCache |Format-Table -Wrap
 Get-NetIPInterface #shows ip interfaces
