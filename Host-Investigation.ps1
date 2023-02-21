@@ -8,7 +8,7 @@
 - Combine recently access files commands
 - Prefetch files
 - System32: Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"}
-- (get-scheduledtasks).actions
+- (get-scheduledtasks).actions 
 #>
 
 #Added to DC's with DNS
