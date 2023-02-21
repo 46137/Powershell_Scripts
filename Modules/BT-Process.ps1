@@ -20,7 +20,7 @@ function BT-Process(){
         $return_data.PPID = $_.ParentProcessID
         $return_data.Name = $_.Name
         $return_data.ExecutablePath = $_.ExecutablePath
-        $return_data.ExecutableAuthCode = (Get-AuthenticodeSignature -FilePath $return_data.ExecutablePath).Status #Get-AuthenticodeSignature is slow, disable if needed.
+        #$return_data.ExecutableAuthCode = (Get-AuthenticodeSignature -FilePath $return_data.ExecutablePath).Status #Get-AuthenticodeSignature is slow, disable if needed.
         $return_data.CommandLine = $_.CommandLine
         $filtered_proc += $return_data
     }

@@ -1,9 +1,10 @@
 #Script intent: To quicky ping sweep the network and determine if remoting ports are up.
+#Note: If ping is disabled it won't port scan.
 $ErrorActionPreference = 'SilentlyContinue' # Disables errors. Errors will occur on failed ports.
 $DTG = Get-Date -Format "yyMMdd"
 
 #Changing Variables
-$Subnets = '192.168.0','192.168.65'#,'172.16.10','172.16.11'
+$Subnets = '172.16.10'#,'172.16.11'
 $Ports = '5985','135'#,'22','3389'
 $FolderPath = "C:\Users\heady\Desktop"
 
