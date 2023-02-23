@@ -9,15 +9,16 @@ $DTG = Get-Date -Format "yyMMdd"
 
 #There are two methods below, invoke a single command or invoke a ps1 script. Comment out the one not needed.  
 
-#$output = Invoke-Command -ComputerName $comp -Credential $Credential -ScriptBlock { 
-#    #list below the commands you want to query.
-#    whoami        
-#}
+$output = Invoke-Command -ComputerName $comp -Credential $Credential -ScriptBlock { 
+    #list below the commands you want to query.
+    #Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid        
+    whoami
+}
 
-$output = Invoke-Command -FilePath C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-SysInfo.ps1 -ComputerName $comp -Credential $Credential
+#$output = Invoke-Command -FilePath C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-SysInfo.ps1 -ComputerName $comp -Credential $Credential
 
 $output
 
 #There are two output methods, to a appending text log or json. Comment out the one not needed.
-$output | Out-File -Append C:\Users\heady\Desktop\$DTG-$comp-log.txt
+#$output | Out-File -Append C:\Users\heady\Desktop\$DTG-$comp-log.txt
 #$output | ConvertTo-Json | Out-File -Append C:\Users\heady\Desktop\$DTG-$comp-data.json

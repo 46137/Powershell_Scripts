@@ -7,7 +7,7 @@ $Credential = New-Object -TypeName System.Management.Automation.PSCredential -Ar
 $DTG = Get-Date -Format "yyMMdd"
 
 #Select the hosts text file. E.g. 230220-Hosts-Port-5985
-$Hosts = Get-Content 'C:\Users\Heady\Desktop\230220-Hosts-Port-5985.txt'
+$Hosts = Get-Content 'C:\Users\Heady\Desktop\230221-Hosts-Port-5985.txt'
 foreach ($H in $Hosts){
 
     $Modules = Get-Content C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\Payload_Endpoint-Modules.txt
