@@ -2,19 +2,17 @@ function BT-InvalidFiles(){
     <#
     .DESCRIPTION
     To Run: Execute this file. (OR)
-    To Run: Import-Module .\BT-Template.ps1 -Force 
-
-    To Do: Combine raw1 and raw2. 
-           Change to -> Get-ChildItem -Path "C:\Windows\Temp\" -Recurse |ForEach-Object {Get-AuthenticodeSignature |Where-Object {$_.Status -ne "Valid"}}
-
+    To Run: Import-Module .\BT-InvalidFiles.ps1 -Force 
     #>
     [CmdletBinding()]
     param()
     $ErrorActionPreference = 'SilentlyContinue' # Disables errors.
-    #Raw data.
-    $raw1 = Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path
-    $raw2 = Get-AuthenticodeSignature -FilePath C:\* |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path
-    $raw = $raw1 + $raw2 
+    #Raw data from multiple sources.
+    $raw1 = Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path # This method will show files 
+    $raw2 = (Get-ChildItem -Path 'C:\Users\Public' -Recurse).FullName |ForEach-Object {Get-AuthenticodeSignature -FilePath $_} |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path
+    $raw3 = (Get-ChildItem -Path 'C:\Windows\Temp' -Recurse).FullName |ForEach-Object {Get-AuthenticodeSignature -FilePath $_} |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path
+    $raw4 = (Get-ChildItem -Path 'C:\Users\Windows\AppData\Local\Temp' -Recurse).FullName |ForEach-Object {Get-AuthenticodeSignature -FilePath $_} |Where-Object {$_.Status -ne "Valid"} |Select-Object -Property Status,Path
+    $raw = $raw1 + $raw2 + $raw3 + $raw4
     
     # Creating an array to store filtered information.
     $Filtered = @()
