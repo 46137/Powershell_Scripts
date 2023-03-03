@@ -138,6 +138,7 @@ Get-Service |Format-Table -Wrap
 Get-Service |Where-Object {$_.Status -eq "Running"} |Format-Table -Wrap
 Get-Service "wmi*"
     Stop-Service -Name "sysmon"
+    .\sc.exe delete sysmon
 Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 
 #TASKS/REGISTRY/SUB-EVENTS
