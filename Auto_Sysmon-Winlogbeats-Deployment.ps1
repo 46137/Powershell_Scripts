@@ -58,4 +58,4 @@ $Session = New-PSSession -ComputerName $H -Credential $Credential
         Write-Host "$H - Winlogbeat Already Running"
     }
     Remove-PSSession $Session #removes session
-}
+}# Once done, add the required subnets to security onion. 'sudo so-allow' then choose logstash, and enter the required subnets for injestion.
