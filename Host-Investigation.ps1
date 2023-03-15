@@ -38,7 +38,7 @@ netsh firewall set icmpsetting 8 #Enable ping on Win7
     psexec.exe \\172.16.12.10 -h -s powershell.exe Enable-PSRemoting -Force
     psexec.exe \\172.16.12.10 -u "yourdomain\administrator" -p "password" -s C:\Windows\System32\winrm.cmd quickconfig -q  
     Enable-PSRemoting -Force #needs to be enabled on the endpoint before trying to remote to it
-    Set-Item WSMan:\localhost\client\trustedhosts '172.15.2.2' #done on the localhost to allow a connection to a specific endpoint
+    Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*" #done on the localhost to allow a connection to a specific subnet
     Set-Item WSMan:\localhost\client\trustedhosts * #done on the localhost to allow a connection to all endpoints
     Get-Item WSMan:\localhost\client\trustedhosts #shows the current localhost configuration
 New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
