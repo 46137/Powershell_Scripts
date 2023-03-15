@@ -29,7 +29,8 @@ Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM po
 New-Object System.Net.Sockets.TcpClient -ArgumentList 172.16.12.10,5985 #Quicker than Test-NetConnection
 New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
 New-NetFirewallRule -DisplayName "Allow Ping" -Direction Inbound -Protocol ICMPv4 -Action Allow -Enabled True -Profile Any -LocalPort Any -EdgeTraversalPolicy Allow #Enable ping on Win10.
-New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block
+New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block #Blocking a port.
+Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
 netsh firewall set icmpsetting 8 #Enable ping on Win7
     wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
     wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
