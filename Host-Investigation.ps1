@@ -85,6 +85,7 @@ Get-ADComputer -filter 'OperatingSystem -like "*"' -properties Name, OperatingSy
 Get-ADUser -Filter * #for all domain accounts
 Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for accounts starting with A
     Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
+    Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
     Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
     Remove-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
