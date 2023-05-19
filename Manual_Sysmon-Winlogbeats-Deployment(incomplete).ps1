@@ -41,3 +41,30 @@ $Session = New-PSSession -ComputerName $H -Credential $Credential
     }
     Get-PSSession | Remove-PSSession #removes all sessions at the end
 }
+
+$User = "GVS\Head" #"546CMT\Administrator"
+$PWord = Get-Content 'C:\Users\Administrator.GVS-WIN-HUNT-5\Documents\secure.txt' | ConvertTo-SecureString
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+
+$Session = New-PSSession -ComputerName 192.168.20.4 -Credential $Credential
+Invoke-Command -Session $Session -ScriptBlock{get-service *sysmon*}
+Invoke-Command -Session $Session -ScriptBlock{get-service winlogbeat}
+Invoke-Command -Session $Session -ScriptBlock{restart-service winlogbeat}
+
+Copy-Item -Path 'C:\Users\Administrator.GVS-WIN-HUNT-5\Documents\win\Sysmon64.exe' -ToSession $Session -Destination 'C:\Sysmon64.exe'
+Copy-Item -Path 'C:\Users\Administrator.GVS-WIN-HUNT-5\Documents\win\sysmonconfig-export.xml' -ToSession $Session -Destination 'C:\sysmonconfig-export.xml'
+
+Invoke-Command -Session $Session -ScriptBlock{C:\Sysmon64.exe -accepteula -i C:\sysmonconfig-export.xml}
+#Invoke-Command -Session $Session -ScriptBlock{C:\Sysmon64.exe -u force}
+Invoke-Command -Session $Session -ScriptBlock{start-service Sysmon64}
+
+Invoke-Command -Session $Session -ScriptBlock{Remove-Item -Path 'C:\Sysmon64.exe' -Recurse -Force}
+Invoke-Command -Session $Session -ScriptBlock{Remove-Item -Path 'C:\sysmonconfig-export.xml' -Recurse -Force}
+
+Invoke-Command -Session $Session -ScriptBlock{get-service winlogbeat}
+Copy-Item -Path 'C:\Users\Administrator.GVS-WIN-HUNT-5\Documents\win\winlog.msi' -ToSession $Session -Destination 'C:\winlog.msi'
+Invoke-Command -Session $Session -ScriptBlock{Start-Process msiexec.exe -Wait -ArgumentList '/I C:\winlog.msi /quiet'}
+Copy-Item -Path 'C:\Users\Administrator.GVS-WIN-HUNT-5\Documents\win\winlogbeat.yml' -ToSession $Session -Destination 'C:\ProgramData\Elastic\Beats\winlogbeat\winlogbeat.yml'
+Invoke-Command -Session $Session -ScriptBlock{Start-Service Winlogbeat}   
+
+Invoke-Command -Session $Session -ScriptBlock{Remove-Item -Path 'C:\winlog.msi' -Recurse -Force}

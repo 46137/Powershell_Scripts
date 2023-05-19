@@ -11,10 +11,7 @@
 - (get-scheduledtasks).actions 
 #>
 
-#Added to DC's with DNS
-#add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.fr.de,*.uan.ao,*.pikapika.ph,*.jobkorea.co.kr,*.internetdownloadmanager.in.th" 
-#set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.fr.de,*.uan.ao,*.pikapika.ph,*.jobkorea.co.kr,*.internetdownloadmanager.in.th,*.bigarsefans.com" #adding dns blocks
-#get-dnsserverqueryresolutionpolicy
+
 
 Update-Help
 Get-Help process #searching for commandlets
@@ -88,11 +85,17 @@ Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for accounts starting with
     Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
     Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
-    Remove-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
+    Remove-ADUser -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
 
 Get-AdGroup -Filter * # lists all AD groups
 Get-ADGroupMember -Identity 'Administrators'
 Get-GPO
+
+#Sinkhole on DC
+add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.uan.ao,mincrosoft.com" #adding dns blocks
+set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.uan.ao,mincrosoft.com,smallcatmeow.com"  #modifying dns blocks
+get-dnsserverqueryresolutionpolicy
+Clear-DnsClientCache # Clear local cache on all/effected hosts.
 
 #USER/GROUPS
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
@@ -146,7 +149,7 @@ Get-Service "wmi*"
     .\sc.exe delete sysmon
 Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 
-#TASKS/REGISTRY/SUB-EVENTS
+#PERSISTANCE METHODS
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
 Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
 Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently active tasks, keep in mind ready tasks also
@@ -163,7 +166,12 @@ Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
-#WMI EVENT SUBSCRIPTION PERSISTENCE
+Get-BitsTransfer -AllUsers -Name * #Shows BitsJob objects for all users
+Get-BitsTransfer -AllUsers -Name "TestJob1"
+    #Suspending or Removing
+    $remove = Get-BitsTransfer -AllUsers -Name "TestJob1"
+    Remove-BitsTransfer -BitsJob $remove
+
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query property.
 Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
@@ -172,7 +180,8 @@ Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Sho
 Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
 Get-smbopenfile #further info  
 (Get-ChildItem -Path 'C:\Windows\system32\spool\DRIVERS\x64\3\' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Hashes all the driver files
-    #Might need to get-service spooler |stop-service
+    #Get-Service spooler |Stop-Service (Optional)
+    #Stop-Process -id 1685 (Optional). For 'spoolsv', if not reset machine. 
     remove-printerdriver -name HP2057 #removes the driver
     get-smbopenfile |where-object {$_.path -like "*NIGHTMARE.DLL" } |close-smbopenfile #closes smb connections linked to the dll drivers so we can delete the file
     remove-item -Path C:\Windows\system32\spool\DRIVERS\x64\3\nightmare.dll -Force #removes the bad DLL
