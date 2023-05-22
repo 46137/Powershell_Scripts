@@ -10,7 +10,7 @@ foreach ($H in $Hosts){
 $Session = New-PSSession -ComputerName $H -Credential $Credential
     if((Invoke-Command -Session $Session -ScriptBlock { Get-Service -Name Sysmon }).Status -ne 'Running'){
         # sysmon installation
-        # You can get pre-built config from https://github.com/SwiftOnSecurity/sysmon-config
+        # You can get pre-built config from https://github.com/ion-storm/sysmon-config (Newer SwiftOnSecurity)
         # Or a more modular config from https://github.com/olafhartong/sysmon-modular (default - sysmonconfig.xml)
         Copy-Item -Path 'C:\Users\Heady\Desktop\winlog\Sysmon.exe' -ToSession $Session -Destination 'C:\Sysmon.exe'
         Copy-Item -Path 'C:\Users\Heady\Desktop\winlog\Sysmon-Config.xml' -ToSession $Session -Destination 'C:\Sysmon-Config.xml'
