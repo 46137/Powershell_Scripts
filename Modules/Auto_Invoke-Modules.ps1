@@ -7,7 +7,7 @@ $Credential = New-Object -TypeName System.Management.Automation.PSCredential -Ar
 $DTG = Get-Date -Format "yyMMdd"
 
 #Select the hosts text file. E.g. 230220-Hosts-Port-5985
-$Hosts = Get-Content 'C:\Users\Heady\Desktop\230302-Hosts-Port-5985.txt'
+$Hosts = Get-Content 'C:\Users\Heady\Desktop\230530-Hosts-Port-5985.txt'
 foreach ($H in $Hosts){
 
     $Modules = Get-Content C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\Payload_Endpoint-Modules.txt
@@ -17,7 +17,7 @@ foreach ($H in $Hosts){
         $output
 
         #There are two output methods, to a appending text log or json. Comment out the one not needed.
-        #$output | Out-File -Append C:\Users\heady\Desktop\$DTG-$H-log.txt
-        $output | ConvertTo-Json | Out-File -Append C:\Users\heady\Desktop\$DTG-$H-data.json
+        $output | Out-File -Append C:\Users\heady\Desktop\$DTG-$H-log.txt
+        #$output | ConvertTo-Json | Out-File -Append C:\Users\heady\Desktop\$DTG-$H-data.json
     }
 }

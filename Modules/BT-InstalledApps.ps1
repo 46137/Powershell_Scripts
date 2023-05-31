@@ -30,4 +30,4 @@ function BT-InstalledApps(){
     $Filtered
 }
 #Calling the function below will output the results when run.
-BT-InstalledApps
+BT-InstalledApps |Sort-Object -Property InstallDate -Descending |Format-Table -Wrap

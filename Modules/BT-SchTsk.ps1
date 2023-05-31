@@ -30,4 +30,4 @@ function BT-SchTsk(){
     $filtered_tasks
 }
 #Calling the function below will output the results when run.
-BT-SchTsk
+BT-SchTsk |Sort-Object -Property CreationDate -Descending |Format-Table -Wrap

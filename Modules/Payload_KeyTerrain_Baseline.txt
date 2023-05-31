@@ -1,0 +1,39 @@
+
+
+BT-SysInfo
+
+        "=== ACTIVE INTERFACES ==="
+        Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
+BT-InstalledApps
+BT-UserInfo
+BT-Netstat (Incomplete)
+        Get-DnsClientCache |Format-Table -Wrap
+BT-Process
+        "=== RUNNING SERVICES ==="
+        Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
+BT-SchTsk #Edit to sort the output by either 'CreationDate' or 'LastRunTime'
+        
+        "=== HOSTS FILE ==="
+        Get-Content C:\Windows\System32\drivers\etc\hosts
+        "=== REGISTRY RUNKEYS ==="
+        Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+        Get-ItemProperty -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+        Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+        Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+        "=== SUBSCRIPTION EVENTS ==="
+        Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query property.
+        Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
+        Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
+        "=== TEMP FILES ==="
+        Get-ChildItem -Path C:\Windows\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
+        Get-AuthenticodeSignature -FilePath C:\Windows\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid
+        (Get-ChildItem -Path C:\Windows\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
+        Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
+        Get-AuthenticodeSignature -FilePath C:\Users\Administrator\AppData\Local\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid 
+        (Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
+        "=== RECYCLE BIN ==="
+        Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
+        (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
+        "=== NAMED PIPES ==="
+        Get-ChildItem \\.\pipe\ |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows named pipes
+    

@@ -27,4 +27,4 @@ function BT-Process(){
     $filtered_proc
 }
 #Calling the function below will output the results when run.
-BT-Process
+BT-Process |Sort-Object -Property CreationDate -Descending |Format-Table -Wrap
