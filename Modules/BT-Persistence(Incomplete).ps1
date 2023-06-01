@@ -1,12 +1,12 @@
-function BT-Persistance(){
+function BT-SchTsk(){
     <#
     .DESCRIPTION
     To Run: Execute this file. (OR)
-    To Run: Import-Module .\BT-Persistance.ps1 -Force 
+    To Run: Import-Module .\BT-SchTsk.ps1 -Force 
     Add: RunKeys
     Add: Get-BitsTransfer
-    Add: SubscriptionEvents
-    Add:
+    Add: Services
+
     #>
     [CmdletBinding()]
     param()
@@ -33,4 +33,11 @@ function BT-Persistance(){
     $filtered_tasks
 }
 #Calling the function below will output the results when run. Filters can be added for better human-readability.
-BT-Persistance |Sort-Object -Property CreationDate -Descending
+BT-SchTsk |Sort-Object -Property CreationDate -Descending
+
+#Detect with SysmonID:19. Shows trigger for execution.
+Get-WMIObject -Namespace root\Subscription -Class __EventFilter | Where-Object {$_.Name -ne 'SCM Event Log Filter'}
+#Detect with SysmonID:20. Shows actions, e.g. Base64 encoded string, executing files.
+Get-WMIObject -Namespace root\Subscription -Class __EventConsumer | Where-Object {$_.Name -ne 'SCM Event Log Consumer'}
+#Detect with SysmonID:21. Binds Filter and Consumer Classes.
+Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding  | Where-Object {$_.Consumer -ne 'NTEventLogEventConsumer.Name="SCM Event Log Consumer"'}

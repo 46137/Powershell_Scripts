@@ -172,9 +172,15 @@ Get-BitsTransfer -AllUsers -Name "TestJob1"
     $remove = Get-BitsTransfer -AllUsers -Name "TestJob1"
     Remove-BitsTransfer -BitsJob $remove
 
-Get-WMIObject -Namespace root\Subscription -Class __EventFilter #Shows the query property.
-Get-WMIObject -Namespace root\Subscription -Class __EventConsumer # List event consumers.
-Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding #Shows detailed path.
+#Detect with SysmonID:19. Shows trigger for execution.
+Get-WMIObject -Namespace root\Subscription -Class __EventFilter
+    Get-WMIObject -Namespace root\Subscription -Class __EventFilter -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
+#Detect with SysmonID:20. Shows actions, e.g. Base64 encoded string, executing files.
+Get-WMIObject -Namespace root\Subscription -Class __EventConsumer
+    Get-WMIObject -Namespace root\Subscription -Class CommandLineEventConsumer -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
+#Detect with SysmonID:21. Binds Filter and Consumer Classes.
+Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding
+    Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding -Filter “__Path LIKE ‘%Updater%’” | Remove-WmiObject -Verbose #Removing
 
 #PRINTNIGHTMARE PRIV-ESC AND REMOVAL
 Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
