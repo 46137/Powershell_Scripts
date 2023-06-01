@@ -3,7 +3,6 @@ function BT-Process(){
     .DESCRIPTION
     To Run: Execute this file. (OR)
     To Run: Import-Module .\BT-Process.ps1 -Force 
-
     #>
     [CmdletBinding()]
     param()
@@ -26,5 +25,5 @@ function BT-Process(){
     }
     $filtered_proc
 }
-#Calling the function below will output the results when run.
+#Calling the function below will output the results when run. Filters can be added for better human-readability.
 BT-Process |Sort-Object -Property CreationDate -Descending |Format-Table -Wrap

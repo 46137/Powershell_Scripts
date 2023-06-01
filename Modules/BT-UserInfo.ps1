@@ -43,5 +43,5 @@ function BT-UserInfo {
     } 
     $UsersInfo
 }
-#Calling the function below will output the results when run.
+#Calling the function below will output the results when run. Filters can be added for better human-readability.
 BT-UserInfo

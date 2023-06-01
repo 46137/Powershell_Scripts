@@ -1,4 +1,6 @@
 C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-SysInfo.ps1
 C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-InstalledApps.ps1
 C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-UserInfo.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-Netstat.ps1
 C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-Process.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-InvalidFiles.ps1

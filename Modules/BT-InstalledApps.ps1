@@ -3,13 +3,11 @@ function BT-InstalledApps(){
     .DESCRIPTION
     To Run: Execute this file. (OR)
     To Run: Import-Module .\BT-InstalledApps.ps1 -Force 
-
     #>
     [CmdletBinding()]
     param()
     $ErrorActionPreference = 'SilentlyContinue' # Disables errors.
     #Raw data.
-
     $raw1 = Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*
     $raw2 = Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\*
     $raw = $raw1 + $raw2
@@ -29,5 +27,5 @@ function BT-InstalledApps(){
     }
     $Filtered
 }
-#Calling the function below will output the results when run.
-BT-InstalledApps |Sort-Object -Property InstallDate -Descending |Format-Table -Wrap
+#Calling the function below will output the results when run. Filters can be added for better human-readability.
+BT-InstalledApps |Sort-Object -Property InstallDate -Descending 

@@ -3,9 +3,6 @@ function BT-Netstat(){
     .DESCRIPTION
     To Run: Execute this file. (OR)
     To Run: Import-Module .\BT-Netstat.ps1 -Force 
-
-    Ingergrate Get-NetUDPEndpoint
-
     #>
     [CmdletBinding()]
     param()
@@ -35,5 +32,5 @@ function BT-Netstat(){
     }
     $Filtered
 }
-#Calling the function below will output the results when run.
-BT-Netstat |Sort-Object -Property CreationTime |Format-Table -Wrap
+#Calling the function below will output the results when run. Filters can be added for better human-readability.
+BT-Netstat |Sort-Object -Property State |Select-Object -Property CreationTime, PID, ProcessName, State, SrcAddress, SrcPort, DstAddress, DstPort, Protocol, ExecutablePath |Format-Table -Wrap

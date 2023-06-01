@@ -1,9 +1,12 @@
-function BT-SchTsk(){
+function BT-Persistance(){
     <#
     .DESCRIPTION
     To Run: Execute this file. (OR)
-    To Run: Import-Module .\BT-SchTsk.ps1 -Force 
-
+    To Run: Import-Module .\BT-Persistance.ps1 -Force 
+    Add: RunKeys
+    Add: Get-BitsTransfer
+    Add: SubscriptionEvents
+    Add:
     #>
     [CmdletBinding()]
     param()
@@ -23,11 +26,11 @@ function BT-SchTsk(){
         $return_data.TaskPath = $_.TaskPath
         $return_data.ExecutablePath = ($_.Actions).execute
         $return_data.ExecutableAuthCode = (Get-AuthenticodeSignature -FilePath $return_data.ExecutablePath).Status
-        $return_data.FileHashSHA1 = (Get-FileHash -Algorithm SHA1 $return_data.ExecutablePath).Hash
-        $return_data.FileHashSHA256 = (Get-FileHash -Algorithm SHA256 $return_data.ExecutablePath).Hash
+        $return_data.FileHashSHA1 = (Get-FileHash -Algorithm SHA1 $return_data.ExecutablePath -ErrorAction SilentlyContinue).Hash
+        $return_data.FileHashSHA256 = (Get-FileHash -Algorithm SHA256 $return_data.ExecutablePath -ErrorAction SilentlyContinue).Hash
         $filtered_tasks += $return_data
     }
     $filtered_tasks
 }
-#Calling the function below will output the results when run.
-BT-SchTsk |Sort-Object -Property CreationDate -Descending |Format-Table -Wrap
+#Calling the function below will output the results when run. Filters can be added for better human-readability.
+BT-Persistance |Sort-Object -Property CreationDate -Descending
