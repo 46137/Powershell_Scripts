@@ -1,17 +1,15 @@
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-SysInfo.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-InstalledApps.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-UserInfo.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-Netstat.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-Process.ps1
+C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-InvalidFiles.ps1
 
-
-BT-SysInfo
-
-        "=== ACTIVE INTERFACES ==="
-        Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
-BT-InstalledApps
-BT-UserInfo
-BT-Netstat (Incomplete)
         Get-DnsClientCache |Format-Table -Wrap
-BT-Process
+
         "=== RUNNING SERVICES ==="
         Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
-BT-SchTsk #Edit to sort the output by either 'CreationDate' or 'LastRunTime'
+BT-Persistance(Incomplete) #Edit to sort the output by either 'CreationDate' or 'LastRunTime'
         
         "=== HOSTS FILE ==="
         Get-Content C:\Windows\System32\drivers\etc\hosts
