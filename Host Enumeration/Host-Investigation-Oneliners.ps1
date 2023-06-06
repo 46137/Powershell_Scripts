@@ -1,17 +1,12 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
 
 <#Tasks:
-- Test holly AD command
 - Add section for get-mail (mailserver)
 - Recycle bin command to get files from all users (SIDS), hash bin files?
 - Network shares ADMIN$, IPC$, c$
 - Combine recently access files commands
 - Prefetch files
-- System32: Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"}
-- (get-scheduledtasks).actions 
 #>
-
-
 
 Update-Help
 Get-Help process #searching for commandlets

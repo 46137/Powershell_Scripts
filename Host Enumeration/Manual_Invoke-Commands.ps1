@@ -10,8 +10,7 @@ $DTG = Get-Date -Format "yyMMdd"
 #There are two methods below, invoke a single command or invoke a ps1 script. Comment out the one not needed.  
 
 $output = Invoke-Command -ComputerName $comp -Credential $Credential -ScriptBlock { 
-    #list below the commands you want to query.
-    #Get-AuthenticodeSignature -FilePath C:\Windows\System32\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid        
+    #list below the commands you want to query.      
     whoami
 }
 

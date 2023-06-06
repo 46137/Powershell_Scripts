@@ -8,24 +8,24 @@ $Credential = New-Object -TypeName System.Management.Automation.PSCredential -Ar
 
 foreach ($H in $Hosts){
 $Session = New-PSSession -ComputerName $H -Credential $Credential
-    if((Invoke-Command -Session $Session -ScriptBlock { Get-Service -Name Sysmon }).Status -ne 'Running'){
+    if((Invoke-Command -Session $Session -ScriptBlock { Get-Service -Name *sysmon* }).Status -ne 'Running'){
         # sysmon installation
         # You can get pre-built config from https://github.com/ion-storm/sysmon-config (Newer SwiftOnSecurity)
         # Or a more modular config from https://github.com/olafhartong/sysmon-modular (default - sysmonconfig.xml)
-        Copy-Item -Path 'C:\Users\Heady\Desktop\winlog\Sysmon.exe' -ToSession $Session -Destination 'C:\Sysmon.exe'
+        Copy-Item -Path 'C:\Users\Heady\Desktop\winlog\Sysmon64.exe' -ToSession $Session -Destination 'C:\Sysmon64.exe'
         Copy-Item -Path 'C:\Users\Heady\Desktop\winlog\Sysmon-Config.xml' -ToSession $Session -Destination 'C:\Sysmon-Config.xml'
         Invoke-Command -Session $Session -ScriptBlock{
-            C:\Sysmon.exe -accepteula -i C:\Sysmon-Config.xml
-            Start-Service sysmon
+            C:\Sysmon64.exe -accepteula -i C:\Sysmon-Config.xml
+            Start-Service -Name Sysmon64
         }
-        if((Invoke-Command -Session $Session -ScriptBlock { Get-Service -Name Sysmon }).Status -ne 'Running'){
+        if((Invoke-Command -Session $Session -ScriptBlock { Get-Service -Name *sysmon* }).Status -ne 'Running'){
             Write-Host "$H - Sysmon Install Failed"
         }
         else{
             Write-Host "$H - Sysmon Running"
         }
         Invoke-Command -Session $Session -ScriptBlock{
-            Remove-Item -Path 'C:\Sysmon.exe' -Recurse -Force
+            Remove-Item -Path 'C:\Sysmon64.exe' -Recurse -Force
             Remove-Item -Path 'C:\Sysmon-Config.xml' -Recurse -Force
         }
     }
