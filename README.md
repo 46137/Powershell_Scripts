@@ -19,6 +19,8 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 
 ### **Network Enumeration Tasks:**
 - Complete 'Auto_Port-Scan'.
+  - Add subnets/ports loop like ping scan.
+  - Add outfile.
 
 ### **Powershell_One-Liners Tasks:**
 - Commands for recyclebin,prefetch (include hashes).
@@ -26,4 +28,3 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - Alternate data streams.
 - Add section for get-mail (mailserver).
 - Network shares ADMIN$, IPC$, c$
-- 
