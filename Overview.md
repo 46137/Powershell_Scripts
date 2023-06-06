@@ -2,12 +2,11 @@
 
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network.
 
-### **Endpoint Agent Deployment Tasks:**
-- Change 'Manual_Agent-Deployment' to one-liners.
-
 ### **Host Enumeration Tasks:**
 - Create 'Auto_Invoke-Commands/Scripts'.
+- Change 'Manual_Survey-Filtered' to a payload script to be called from 'Auto_Invoke-Commands/Scripts'.
 - Decide if to complete 'Manual_Full-Survey'.
+- Create 'Auto CIM-OS-Detection'?
 
 ### **Modules Framework Tasks:**
 - Complete 'BT-Persistence' module.
@@ -20,3 +19,8 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 
 ### **Network Enumeration Tasks:**
 - Complete 'Auto_Port-Scan'.
+
+### **Powershell_One-Liners Tasks:**
+- Commands for recyclebin,prefetch (include hashes).
+- Alternate data streams.
+- 
