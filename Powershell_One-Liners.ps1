@@ -1,13 +1,5 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
 
-<#Tasks:
-- Add section for get-mail (mailserver)
-- Recycle bin command to get files from all users (SIDS), hash bin files?
-- Network shares ADMIN$, IPC$, c$
-- Combine recently access files commands
-- Prefetch files
-#>
-
 Update-Help
 Get-Help process #searching for commandlets
 Get-Command *process #shows command types of the search

@@ -22,5 +22,8 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 
 ### **Powershell_One-Liners Tasks:**
 - Commands for recyclebin,prefetch (include hashes).
+  - Recycle bin command to get files from all users (SIDS), hash bin files?
 - Alternate data streams.
+- Add section for get-mail (mailserver).
+- Network shares ADMIN$, IPC$, c$
 - 
