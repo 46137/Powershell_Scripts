@@ -16,6 +16,7 @@ $output = Invoke-Command -ComputerName $comp -Credential $Credential -ScriptBloc
 
 #$output = Invoke-Command -FilePath C:\Users\Heady\Documents\Powershell_Scripts-1\Modules\BT-SysInfo.ps1 -ComputerName $comp -Credential $Credential
 
+#Displays output to the screen.
 $output
 
 #There are two output methods, to a appending text log or json. Comment out the one not needed.

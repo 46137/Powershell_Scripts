@@ -1,16 +1,5 @@
 #Script intent: If you're given keyterrain to survey daily throughout an exercise, this will create a local output of each host to look for anomalies.
 
-$hosts = 'WIN10-TEST','DESKTOP-9R76OA2' #List hosts or ips.
-#read-host -assecurestring | convertfrom-securestring | out-file C:\Users\Heady\Desktop\secure.txt <- Run this command once to generate your secure password file. 
-$User = "546CMT\Administrator"
-$PWord = Get-Content 'C:\Users\Heady\Desktop\secure.txt' | ConvertTo-SecureString
-$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
-$DTG = Get-Date -Format "yyMMddHHmm"
-
-foreach ($h in $hosts){
-
-    $output = Invoke-Command -ComputerName $h -Credential $Credential -ScriptBlock { #list below the commands you want to query.
-
         [System.DateTime]::now
         [System.TimeZoneInfo]::Local
         "=== OS SUMMARY ==="
@@ -58,9 +47,4 @@ foreach ($h in $hosts){
         (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
         "=== NAMED PIPES ==="
         Get-ChildItem \\.\pipe\ |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows named pipes
-    
-    }
-    $output
-    $output | Out-File -Append C:\Users\heady\Desktop\$DTG-$h-Survey.txt
-    
-}
+

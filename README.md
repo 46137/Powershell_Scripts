@@ -3,12 +3,12 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network.
 
 ### **Host Enumeration Tasks:**
-- Create 'Auto_Invoke-Commands/Scripts'.
-- Change 'Manual_Survey-Filtered' to a payload script to be called from 'Auto_Invoke-Commands/Scripts'.
+- Rework 'Payload_Key-Terrain-Survey'.
 - Decide if to complete 'Manual_Full-Survey'.
 - Create 'Auto CIM-OS-Detection'?
 
 ### **Modules Framework Tasks:**
+- Find a better way in 'Auto_Invoke-Modules' to call modules (not via a txt file).
 - Complete 'BT-Persistence' module.
 - Complete 'BT-PII' module.
 - Complete 'Payload_KeyTerrain-Survey'.
