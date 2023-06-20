@@ -112,6 +112,7 @@ Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalP
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #adds process and creation time
 Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
     tasklist /svc |findstr 21664 #shows further information on the suspect PID
+Get-NetUDPEndpoint |Select-Object -Property LocalAddress,LocalPort,RemoteAddress,RemotePort,@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table -Wrap
 Get-Content C:\Windows\System32\drivers\etc\hosts
 Get-Content C:\Windows\System32\drivers\etc\services
 Get-Content C:\Windows\System32\drivers\etc\networks
