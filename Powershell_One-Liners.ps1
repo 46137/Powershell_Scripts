@@ -244,3 +244,5 @@ Get-EventLog -LogName Security -InstanceId 4672 -Newest 20 |Select-Object -Prope
 Get-EventLog -LogName Security -InstanceId 4720 -Newest 20 |Format-List #account created
 Get-EventLog -LogName Security -InstanceId 4778,4779 -Newest 20 |Format-List #RDP history
 Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational"
+Get-WinEvent -Path example.evtx |Out-GridView #Static analysis in GUI.
+Get-WinEvent -Path example.evtx |Where-Object{$_.Message -like "*fail*"} |Format-Table -Wrap
