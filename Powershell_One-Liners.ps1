@@ -1,4 +1,4 @@
-﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. 
+﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally. testtest
 
 Update-Help
 Get-Help process #searching for commandlets
