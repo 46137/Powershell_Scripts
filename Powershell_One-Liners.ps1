@@ -60,6 +60,8 @@ Get-WindowsDriver -Online -All #Shows driver information.
 
 #ACTIVE DIRECTORY
 Get-ADDomain #Shows information on the domain, inc DNS name.
+(Get-ADDomain).domainmode #Shows function level (e.g. Windows2012R2). 
+(Get-ADForest).forestmode
 (Get-ADComputer -Filter *).name # lists all the hostnames.
 get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs
 (Get-ADUser -Filter *).name # list names of all domain accounts.
