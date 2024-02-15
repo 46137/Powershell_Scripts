@@ -60,25 +60,31 @@ Get-WindowsDriver -Online -All #Shows driver information.
 
 #ACTIVE DIRECTORY
 Get-ADDomain #Shows information on the domain, inc DNS name.
-(Get-ADDomain).domainmode #Shows function level (e.g. Windows2012R2). 
-(Get-ADForest).forestmode
+(Get-ADDomain).domainmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
+(Get-ADForest).forestmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
 (Get-ADComputer -Filter *).name # lists all the hostnames.
-get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs
+Resolve-DnsName DC1.dwc.gov.au # Lists the IP address of the DNS name.
+Resolve-DnsName 10.10.10.10 # Reverse DNS lookup.
+(get-adcomputer -filter *).name |foreach {Resolve-DnsName $_} # lists the dns(hostname) & associated IPs.
+get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs.
 (Get-ADUser -Filter *).name # list names of all domain accounts.
 Get-ADUser -Filter * -Properties * |Select-Object -Property Name, WhenCreated | Sort-Object WhenCreated
 Get-ADComputer -filter 'OperatingSystem -like "*"' -properties Name, OperatingSystem, OperatingSystemVersion, IPv4Address |select-object -property Name, OperatingSystem, OperatingSystemVersion, IPv4Address
 
 Get-ADUser -Filter * #for all domain accounts
-Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for accounts starting with A
+Get-ADUser -Filter 'Name -like "*Leigh"' # Looks for specific names.
+Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for username accounts starting with A.
     Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
     Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
     Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
     Remove-ADUser -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
+Get-ADUser -filter {Description -notlike "*CTF Player*" -and Description -notlike "*IT Admin of DWC*"} -properties Description |Select-Object samaccountname,description #checking domain accounts for passwords in descriptions.
 
 Get-AdGroup -Filter * # lists all AD groups
 Get-ADGroupMember -Identity 'Administrators'
 Get-GPO
+Get-ADDefaultDomainPasswordPolicy #Compare to ISM.
 
 #Sinkhole on DC
 add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.uan.ao,mincrosoft.com" #adding dns blocks
