@@ -32,6 +32,10 @@ Get-PSSession #Shows active sessions.
 Enter-PSSession 8 
 Get-PSSession |Remove-PSSession #Removes all sessions.
 
+# Validate Credentials
+Add-Type -AssemblyName System.DirectoryServices.AccountManagement; $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext([System.DirectoryServices.AccountManagement.ContextType]::Domain, 'dwc'); $principalContext.ValidateCredentials('ubolt', 'FastestMan1')
+runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
+
 #RUNNING SCRIPTS
 Get-ExecutionPolicy -List #Shows the current state of the policies of the endpoint.
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned #RemoteSigned - Downloaded scripts must be signed by a trusted publisher.
@@ -63,6 +67,7 @@ Get-ADDomain #Shows information on the domain, inc DNS name.
 (Get-ADDomain).domainmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
 (Get-ADForest).forestmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
 (Get-ADComputer -Filter *).name # lists all the hostnames.
+(Get-ADComputer -Filter {ms-MCS-AdmPwd -like '*'} -Properties ms-MCS-AdmPwd).count #Total accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled. 
 Resolve-DnsName DC1.dwc.gov.au # Lists the IP address of the DNS name.
 Resolve-DnsName 10.10.10.10 # Reverse DNS lookup.
 (get-adcomputer -filter *).name |foreach {Resolve-DnsName $_} # lists the dns(hostname) & associated IPs.
@@ -79,10 +84,13 @@ Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for username accounts star
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
     Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
     Remove-ADUser -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
+Get-ADUser -Identity 'krbtgt' -Properties 'passwordlastset' # Lists last time password was changed.
+Get-ADUser -Filter * -Properties PasswordNeverExpires | Where-Object {$_.PasswordNeverExpires -eq $true} #Check users for password never expiring.
 Get-ADUser -filter {Description -notlike "*CTF Player*" -and Description -notlike "*IT Admin of DWC*"} -properties Description |Select-Object samaccountname,description #checking domain accounts for passwords in descriptions.
 
 Get-AdGroup -Filter * # lists all AD groups
 Get-ADGroupMember -Identity 'Administrators'
+(Get-ADGroupMember -Identity 'Domain Admins').name #Lists all domain admins.
 Get-GPO
 Get-ADDefaultDomainPasswordPolicy #Compare to ISM.
 
