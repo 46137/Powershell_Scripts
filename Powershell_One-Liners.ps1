@@ -228,6 +228,11 @@ Get-ChildItem C:\Windows\*.* |ForEach-Object {Get-AuthenticodeSignature $_} |Whe
     Compress-Archive -Path C:\Users\Work\Downloads -DestinationPath C:\compressed.zip
 #looking at files created around the time of a task running
 Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object {$_.CreationTime -gt "10/25/2018 11:29:00 AM" -and $_.CreationTime -lt "10/26/2018 11:40:00 AM"} |Sort-Object CreationTime, Name |Format-Table CreationTime, Name
+#looking/decrypting cpasswords. cpassword is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
+Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
+    Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
+    Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
+
 Get-FileShare
 Get-SmbShare
 
