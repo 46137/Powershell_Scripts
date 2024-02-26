@@ -79,6 +79,7 @@ Get-ADComputer -filter 'OperatingSystem -like "*"' -properties Name, OperatingSy
 Get-ADUser -Filter * #for all domain accounts
 Get-ADUser -Filter 'Name -like "*Leigh"' # Looks for specific names.
 Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for username accounts starting with A.
+    (Get-ADUser -Identity "Heady" -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name #Listing what groups a domain user is a part of.
     Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
     Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
