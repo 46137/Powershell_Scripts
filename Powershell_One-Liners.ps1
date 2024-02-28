@@ -91,6 +91,9 @@ Get-ADUser -Filter * -Properties PasswordNeverExpires | Where-Object {$_.Passwor
 Get-ADUser -filter {Description -notlike "*CTF Player*" -and Description -notlike "*IT Admin of DWC*"} -properties Description |Select-Object samaccountname,description #checking domain accounts for passwords in descriptions.
 Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequirePreAuth #AS-Response roasting is obtaining the AS-REP and attempting to crack the hash offline. Pre-authentication requires users to prove their identity before receiving a TGT.
 Get-ADUser -filter * -Properties UserPassword |Where-Object {$_.UserPassword} | Select-Object SamAccountName,UserPassword #To find plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
+Get-LapsADPassword -Identity ctf2.dwc.gov.au -AsPlainText #Get LAPS
+Get-ADUser -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName, PasswordLastSet | Select-Object Name, servicePrincipalName, PasswordLastSet #User accounts with SPNs and list password last set.
+Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName |Where-Object {$_.name -notlike "Win10Client*"} | Select-Object Name, servicePrincipalName #Objects with SPNs.
 
 Get-AdGroup -Filter * # lists all AD groups
 Get-ADGroupMember -Identity 'Administrators'
