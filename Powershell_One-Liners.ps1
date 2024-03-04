@@ -228,6 +228,7 @@ Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -
 Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include "*.exe" |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName #recent executables used
 Get-ChildItem \\.\pipe\ #shows named pipes
 Get-AuthenticodeSignature -FilePath C:\Users\Administrator\Downloads\bad.exe #malicious file tend to be unsigned
+Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Shows folder permissions.
 Get-ChildItem C:\Windows\*.* |ForEach-Object {Get-AuthenticodeSignature $_} |Where-Object {$_.Status -ne "Valid"} #malicious files tend to be unsigned
     (Get-ItemProperty .\sethc.exe).GetAccessControl() |Format-Table -Wrap #Shows owner of the file.
     Get-Content C:\Users\Administrator\AppData\Local\Temp\sethc.exe | Out-String
