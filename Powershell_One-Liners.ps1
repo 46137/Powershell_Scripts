@@ -67,7 +67,7 @@ Get-ADDomain #Shows information on the domain, inc DNS name.
 (Get-ADDomain).domainmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
 (Get-ADForest).forestmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
 (Get-ADComputer -Filter *).name # lists all the hostnames.
-(Get-ADComputer -Filter {ms-MCS-AdmPwd -like '*'} -Properties ms-MCS-AdmPwd).count #Total accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled. 
+(Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'} |Select-Object SamAccountName).count #Total accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled. 
 Resolve-DnsName DC1.dwc.gov.au # Lists the IP address of the DNS name.
 Resolve-DnsName 10.10.10.10 # Reverse DNS lookup.
 (get-adcomputer -filter *).name |foreach {Resolve-DnsName $_} # lists the dns(hostname) & associated IPs.
@@ -90,9 +90,9 @@ Get-ADUser -Filter {PasswordNotRequired -eq $true} # Users configured not to req
 Get-ADUser -Filter * -Properties PasswordNeverExpires | Where-Object {$_.PasswordNeverExpires -eq $true} #Check users for password never expiring.
 Get-ADUser -filter {Description -notlike "*CTF Player*" -and Description -notlike "*IT Admin of DWC*"} -properties Description |Select-Object samaccountname,description #checking domain accounts for passwords in descriptions.
 Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequirePreAuth #AS-Response roasting is obtaining the AS-REP and attempting to crack the hash offline. Pre-authentication requires users to prove their identity before receiving a TGT.
-Get-ADUser -filter * -Properties UserPassword |Where-Object {$_.UserPassword} | Select-Object SamAccountName,UserPassword #To find plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
+Get-ADUser -Filter {UserPassword -like "*"} -Properties UserPassword |Select-Object SamAccountName,UserPassword #To find plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
 Get-LapsADPassword -Identity ctf2.dwc.gov.au -AsPlainText #Get LAPS
-Get-ADUser -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName, PasswordLastSet | Select-Object Name, servicePrincipalName, PasswordLastSet #User accounts with SPNs and list password last set.
+Get-ADUser -Filter {ServicePrincipalName -like '*'} -Properties PasswordLastSet, ServicePrincipalName |Sort-Object PasswordLastSet | Select-Object Name, PasswordLastSet, ServicePrincipalName #User accounts with SPNs and list password last set.
 Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName |Where-Object {$_.name -notlike "Win10Client*"} | Select-Object Name, servicePrincipalName #Objects with SPNs.
 
 Get-AdGroup -Filter * # lists all AD groups
