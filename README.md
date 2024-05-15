@@ -24,26 +24,27 @@ Get-Command *process
 (Get-Host).version
 
 #Show how long it takes to run a command.
-(Measure-Command{[Get-Process]}).TotalSeconds
+(Measure-Command{[COMMAND]}).TotalSeconds
 ```
 ### **Scanning**
 ```powershell
 #Slow ping sweep.
 1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue}
 ```
-Fast ping sweep look at **Auto_Ping-Scan.ps1**
+For fast ping sweep look at **Auto_Ping-Scan.ps1**
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
 Test-WSMan -ComputerName [IP ADDRESS]
 ```
 ```powershell
-#Slow port test. Common ports: 135(Domain),5985/6(WinRM),22(SSH),3389(RDP)
+#Slow port test. Common ports: 135(Domain),445(SMB),5985/6(WinRM),22(SSH),3389(RDP)
 Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
 ```
 ```powershell
 #Fast port test.
 New-Object System.Net.Sockets.TcpClient -ArgumentList [IP ADDRESS],[PORT]
 ```
+For fast port swrrp look at **Auto_Port-Scan.ps1**
 ### **System Information**
 ### **Host Enumeration Tasks:**
 - Rework 'Payload_KeyTerrain-Survey'.
