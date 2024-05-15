@@ -25,10 +25,18 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - Network shares ADMIN$, IPC$, c$
 
 # Table of Contents
-1. [System Information](#system-information)
+- [Powershell Overview](#powershell-overview)
+- [System Information](#system-information)
 
 
 
 
-
+### **Powershell Overview**
+```
+Update-Help
+Get-Help process #searching for commandlets
+Get-Command *process #shows command types of the search
+(Measure-Command{Get-ComputerInfo}).TotalSeconds #show how long it takes to run a command    
+(Get-Host).version #lists the powershell version
+```
 ### **System Information**
