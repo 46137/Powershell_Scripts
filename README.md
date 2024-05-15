@@ -3,15 +3,11 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
 # Table of Contents
-- [Commands for Processing](#commands-for-processing)
 - [Powershell Overview](#powershell-overview)
 - [System Information](#system-information)
-- [Ongoing Tasks](#host-enumeration-tasks)
+- [Ongoing Tasks](#readmemd-tasks)
 
-### **Commands for Processing**
-```powershell
 
-```
 ### **Powershell Overview**
 ```powershell
 Update-Help
@@ -31,6 +27,7 @@ Get-Command *process
 
 
 
+### **Commands for Processing**
 
 
 ### **Host Enumeration Tasks:**
@@ -48,7 +45,10 @@ Get-Command *process
 - Create 'BT-WebServer' module.
 - Create 'BT-RDSHashes' module?
 
-### **Powershell_One-Liners Tasks:**
+### **Readme.md Tasks:**
+```powershell
+
+```
 - Commands for recyclebin,prefetch (include hashes).
   - Recycle bin command to get files from all users (SIDS), hash bin files?
 - Alternate data streams.
