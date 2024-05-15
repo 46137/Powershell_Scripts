@@ -10,13 +10,18 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 
 ### **Powershell Overview**
 ```powershell
+#Updating
 Update-Help
- #Searching for commandlets.
+
+#Searching for commandlets.
 Get-Help process
+
 #Shows command types of the search.
 Get-Command *process
+
 #Lists the powershell version.
 (Get-Host).version
+
 #Show how long it takes to run a command.
 (Measure-Command{Get-ComputerInfo}).TotalSeconds
 ```
