@@ -23,3 +23,12 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - Alternate data streams.
 - Add section for get-mail (mailserver).
 - Network shares ADMIN$, IPC$, c$
+
+# Table of Contents
+1. [System Information](#system-information)
+
+
+
+
+
+### **System Information**
