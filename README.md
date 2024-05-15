@@ -2,8 +2,9 @@
 
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
-# Table of Contents
+# Commands Table of Contents
 - [Powershell Overview](#powershell-overview)
+- [Scanning](#scanning)
 - [System Information](#system-information)
 - [Ongoing Tasks](#readmemd-tasks)
 
@@ -25,16 +26,8 @@ Get-Command *process
 #Show how long it takes to run a command.
 (Measure-Command{Get-ComputerInfo}).TotalSeconds
 ```
+### **Scanning**
 ### **System Information**
-
-
-
-
-
-
-### **Commands for Processing**
-
-
 ### **Host Enumeration Tasks:**
 - Rework 'Payload_KeyTerrain-Survey'.
 - Decide if to complete 'Manual_Full-Survey'.
