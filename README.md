@@ -27,6 +27,16 @@ Get-Command *process
 (Measure-Command{Get-ComputerInfo}).TotalSeconds
 ```
 ### **Scanning**
+**Slow ping sweep**
+```powershell
+#Slow ping sweep.
+1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue}
+```
+```powershell
+Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
+Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM port related to WinRM are open on that endpoint, 5986 for HTTPS
+New-Object System.Net.Sockets.TcpClient -ArgumentList 172.16.12.10,5985 #Quicker than Test-NetConnection
+```
 ### **System Information**
 ### **Host Enumeration Tasks:**
 - Rework 'Payload_KeyTerrain-Survey'.
