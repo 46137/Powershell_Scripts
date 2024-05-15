@@ -1,6 +1,37 @@
 # Powershell Scripts
 
-This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network.
+This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
+
+# Table of Contents
+- [Commands for Processing](#commands-for-processing)
+- [Powershell Overview](#powershell-overview)
+- [System Information](#system-information)
+- [Ongoing Tasks](#host-enumeration-tasks)
+
+### **Commands for Processing**
+```powershell
+
+```
+### **Powershell Overview**
+```powershell
+Update-Help
+ #Searching for commandlets.
+Get-Help process
+#Shows command types of the search.
+Get-Command *process
+#Lists the powershell version.
+(Get-Host).version
+#Show how long it takes to run a command.
+(Measure-Command{Get-ComputerInfo}).TotalSeconds
+```
+### **System Information**
+
+
+
+
+
+
+
 
 ### **Host Enumeration Tasks:**
 - Rework 'Payload_KeyTerrain-Survey'.
@@ -23,20 +54,3 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - Alternate data streams.
 - Add section for get-mail (mailserver).
 - Network shares ADMIN$, IPC$, c$
-
-# Table of Contents
-- [Powershell Overview](#powershell-overview)
-- [System Information](#system-information)
-
-
-
-
-### **Powershell Overview**
-```
-Update-Help
-Get-Help process #searching for commandlets
-Get-Command *process #shows command types of the search
-(Measure-Command{Get-ComputerInfo}).TotalSeconds #show how long it takes to run a command    
-(Get-Host).version #lists the powershell version
-```
-### **System Information**
