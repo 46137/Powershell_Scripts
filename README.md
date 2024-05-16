@@ -13,7 +13,6 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - [System Information](#system-information)
 - [Ongoing Tasks](#readmemd-tasks)
 
-
 ### **Powershell Overview**
 ```powershell
 #Updating
@@ -31,6 +30,7 @@ Get-Command *process
 #Show how long it takes to run a command.
 (Measure-Command{[COMMAND]}).TotalSeconds
 ```
+
 ### **Scanning**
 ```powershell
 #Slow ping sweep.
@@ -46,13 +46,62 @@ Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
 New-Object System.Net.Sockets.TcpClient -ArgumentList [IP ADDRESS],[PORT]
 ```
 For fast port sweep look at **Auto_Port-Scan.ps1**
+
 ### **Remoting**
 **WinRM**
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
 Test-WSMan -ComputerName [IP ADDRESS]
 ```
+```powershell
+    Enable-PSRemoting -Force #needs to be enabled on the endpoint before trying to remote to it
+    Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*" #done on the localhost to allow a connection to a specific subnet
+    Set-Item WSMan:\localhost\client\trustedhosts * #done on the localhost to allow a connection to all endpoints
+    Get-Item WSMan:\localhost\client\trustedhosts #shows the current localhost configuration
+New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
+New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
+Get-PSSession #Shows active sessions.
+Enter-PSSession 8 
+Get-PSSession |Remove-PSSession #Removes all sessions.
+
+Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -FilePath C:\windows\file.ps1 #running a local script on a remote box
+Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\file.exe'} #running a file on the remote box
+Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-ChildItem C:\Users\Bob\Desktop} #viewing files on remote box
+Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-Content C:\Users\Bob\Desktop\Names.txt} #viewing contents of file on remote box
+
+$session=New-PSSession -ComputerName 172.16.1.51 -Credential Administrator #create session and copy item from it to local box
+Copy-Item -Path 'C:\winlog.msi' -ToSession $session -Destination 'C:\winlog.msi' #copy a file to that session
+Invoke-Command -ComputerName 172.16.1.51 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\winlog.msi' Get-Service winlogbeat} #run that file and show if the service is up
+
+```
+
+
+
+**WMIC**
+```powershell
+    wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
+    wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
+    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" OS GET Name #shows OS name, can use as a test
+    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" service where caption="Windows Remote Management (WS-Management)" call startservice #starts service on a remote host
+
+```
+**PSexec.exe**
+```powershell
+    psexec.exe \\172.16.12.10 cmd #can also try this or hostname to connect over 135 & 445. 
+    psexec.exe \\172.16.12.10 -h -s powershell.exe Enable-PSRemoting -Force
+    psexec.exe \\172.16.12.10 -u "yourdomain\administrator" -p "password" -s C:\Windows\System32\winrm.cmd quickconfig -q  
+
+```
+**Runas.exe**
+```powershell
+runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
+
+```
+
+
+
 ### **System Information**
+
 ### **Host Enumeration Tasks:**
 - Rework 'Payload_KeyTerrain-Survey'.
 - Decide if to complete 'Manual_Full-Survey'.

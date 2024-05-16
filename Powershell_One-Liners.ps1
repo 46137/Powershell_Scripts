@@ -1,54 +1,21 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally.
 
-Update-Help
-Get-Help process #searching for commandlets
-Get-Command *process #shows command types of the search
-(Measure-Command{Get-ComputerInfo}).TotalSeconds #show how long it takes to run a command    
-(Get-Host).version #lists the powershell version
 
-#REMOTING
-1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue} #VERY slow ping sweep.
-Test-WSMan -ComputerName 172.16.12.10 #determines whether WinRM service is running on that endpoint
-Test-NetConnection -Port 5985 -ComputerName 172.16.12.10 #tests if HTTP WinRM port related to WinRM are open on that endpoint, 5986 for HTTPS
-New-Object System.Net.Sockets.TcpClient -ArgumentList 172.16.12.10,5985 #Quicker than Test-NetConnection
-New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
 New-NetFirewallRule -DisplayName "Allow Ping" -Direction Inbound -Protocol ICMPv4 -Action Allow -Enabled True -Profile Any -LocalPort Any -EdgeTraversalPolicy Allow #Enable ping on Win10.
 New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block #Blocking a port.
 Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
 netsh firewall set icmpsetting 8 #Enable ping on Win7
-    wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
-    wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
-    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" OS GET Name #shows OS name, can use as a test
-    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" service where caption="Windows Remote Management (WS-Management)" call startservice #starts service on a remote host
-    psexec.exe \\172.16.12.10 cmd #can also try this or hostname to connect over 135 & 445. 
-    psexec.exe \\172.16.12.10 -h -s powershell.exe Enable-PSRemoting -Force
-    psexec.exe \\172.16.12.10 -u "yourdomain\administrator" -p "password" -s C:\Windows\System32\winrm.cmd quickconfig -q  
-    Enable-PSRemoting -Force #needs to be enabled on the endpoint before trying to remote to it
-    Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*" #done on the localhost to allow a connection to a specific subnet
-    Set-Item WSMan:\localhost\client\trustedhosts * #done on the localhost to allow a connection to all endpoints
-    Get-Item WSMan:\localhost\client\trustedhosts #shows the current localhost configuration
-New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
-Get-PSSession #Shows active sessions.
-Enter-PSSession 8 
-Get-PSSession |Remove-PSSession #Removes all sessions.
+
+
 
 #Validate Credentials
 Add-Type -AssemblyName System.DirectoryServices.AccountManagement; $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext([System.DirectoryServices.AccountManagement.ContextType]::Domain, 'dwc'); $principalContext.ValidateCredentials('ubolt', 'FastestMan1')
-runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
 
 #RUNNING SCRIPTS
 Get-ExecutionPolicy -List #Shows the current state of the policies of the endpoint.
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned #RemoteSigned - Downloaded scripts must be signed by a trusted publisher.
 Set-ExecutionPolicy -ExecutionPolicy Unrestricted #Unrestricted - No restrictions; all scripts can be run.
 
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -FilePath C:\windows\file.ps1 #running a local script on a remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\file.exe'} #running a file on the remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-ChildItem C:\Users\Bob\Desktop} #viewing files on remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-Content C:\Users\Bob\Desktop\Names.txt} #viewing contents of file on remote box
-
-$session=New-PSSession -ComputerName 172.16.1.51 -Credential Administrator #create session and copy item from it to local box
-Copy-Item -Path 'C:\winlog.msi' -ToSession $session -Destination 'C:\winlog.msi' #copy a file to that session
-Invoke-Command -ComputerName 172.16.1.51 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\winlog.msi' Get-Service winlogbeat} #run that file and show if the service is up
 
 #SYSTEM INFORMATION
 whoami
