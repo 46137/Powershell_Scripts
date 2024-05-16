@@ -3,15 +3,15 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
 # Commands Table of Contents
-[Powershell Overview](#powershell-overview)
-[Scanning](#scanning)
-[Remoting](#remoting)
-- WinRM
-- WMIC
-- PSexec.exe
-- Runas.exe
-[System Information](#system-information)
-[Ongoing Tasks](#readmemd-tasks)
+- [Powershell Overview](#powershell-overview)
+- [Scanning](#scanning)
+- [Remoting](#remoting)
+  - WinRM
+  - WMIC
+  - PSexec.exe
+  - Runas.exe
+- [System Information](#system-information)
+- [Ongoing Tasks](#readmemd-tasks)
 
 
 ### **Powershell Overview**
@@ -47,7 +47,7 @@ New-Object System.Net.Sockets.TcpClient -ArgumentList [IP ADDRESS],[PORT]
 ```
 For fast port sweep look at **Auto_Port-Scan.ps1**
 ### **Remoting**
-### WinRM
+**WinRM**
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
 Test-WSMan -ComputerName [IP ADDRESS]
