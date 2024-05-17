@@ -6,6 +6,10 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - [Powershell Overview](#powershell-overview)
 - [Scanning](#scanning)
 - [Remoting](#remoting)
+  - WinRM
+  - WMIC
+  - PSexec.exe
+  - Runas.exe
 - [System Information](#system-information)
 - [Host Enumeration Tasks](#host-enumeration-tasks)
 - [Modules Framework Tasks](#modules-framework-tasks)
