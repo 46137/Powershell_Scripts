@@ -3,15 +3,15 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
 # Commands Table of Contents
-- [Powershell Overview](#powershell-overview)
-- [Scanning](#scanning)
-- [Remoting](#remoting)
-  - WinRM
-  - WMIC
-  - PSexec.exe
-  - Runas.exe
-- [System Information](#system-information)
-- [Ongoing Tasks](#readmemd-tasks)
+- [Powershell Scripts](#powershell-scripts)
+- [Commands Table of Contents](#commands-table-of-contents)
+    - [**Powershell Overview**](#powershell-overview)
+    - [**Scanning**](#scanning)
+    - [**Remoting**](#remoting)
+    - [**System Information**](#system-information)
+    - [**Host Enumeration Tasks:**](#host-enumeration-tasks)
+    - [**Modules Framework Tasks:**](#modules-framework-tasks)
+    - [**Readme.md Tasks:**](#readmemd-tasks)
 
 ### **Powershell Overview**
 ```powershell
@@ -54,10 +54,17 @@ For fast port sweep look at **Auto_Port-Scan.ps1**
 Test-WSMan -ComputerName [IP ADDRESS]
 ```
 ```powershell
-    Enable-PSRemoting -Force #needs to be enabled on the endpoint before trying to remote to it
-    Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*" #done on the localhost to allow a connection to a specific subnet
-    Set-Item WSMan:\localhost\client\trustedhosts * #done on the localhost to allow a connection to all endpoints
-    Get-Item WSMan:\localhost\client\trustedhosts #shows the current localhost configuration
+#Needs to be enabled on the endpoint before trying to remote to it.
+Enable-PSRemoting -Force
+```
+```powershell
+#Checking current localhost configuration.
+Get-Item WSMan:\localhost\client\trustedhosts
+#Modify localhost to allow a connection to a specific subnet.
+Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*"
+#Modify localhost to allow a connection to all endpoints.
+Set-Item WSMan:\localhost\client\trustedhosts
+```
 New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
 New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
 Get-PSSession #Shows active sessions.
