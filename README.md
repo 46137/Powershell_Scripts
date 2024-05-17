@@ -9,9 +9,9 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
     - [**Scanning**](#scanning)
     - [**Remoting**](#remoting)
     - [**System Information**](#system-information)
-    - [**Host Enumeration Tasks:**](#host-enumeration-tasks)
-    - [**Modules Framework Tasks:**](#modules-framework-tasks)
-    - [**Readme.md Tasks:**](#readmemd-tasks)
+    - [**Host Enumeration Tasks**](#host-enumeration-tasks)
+    - [**Modules Framework Tasks**](#modules-framework-tasks)
+    - [**Readme.md Tasks**](#readmemd-tasks)
 
 ### **Powershell Overview**
 ```powershell
@@ -65,6 +65,7 @@ Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*"
 #Modify localhost to allow a connection to all endpoints.
 Set-Item WSMan:\localhost\client\trustedhosts
 ```
+```powershell
 New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
 New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
 Get-PSSession #Shows active sessions.
@@ -79,7 +80,6 @@ Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock 
 $session=New-PSSession -ComputerName 172.16.1.51 -Credential Administrator #create session and copy item from it to local box
 Copy-Item -Path 'C:\winlog.msi' -ToSession $session -Destination 'C:\winlog.msi' #copy a file to that session
 Invoke-Command -ComputerName 172.16.1.51 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\winlog.msi' Get-Service winlogbeat} #run that file and show if the service is up
-
 ```
 
 
@@ -109,12 +109,12 @@ runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
 
 ### **System Information**
 
-### **Host Enumeration Tasks:**
+### **Host Enumeration Tasks**
 - Rework 'Payload_KeyTerrain-Survey'.
 - Decide if to complete 'Manual_Full-Survey'.
 - Create 'Auto CIM-OS-Detection'?
 
-### **Modules Framework Tasks:**
+### **Modules Framework Tasks**
 - Find a better way in 'Auto_Invoke-Modules' to call modules (not via a txt file).
 - Complete 'BT-Persistence' module.
 - Complete 'BT-PII' module.
@@ -124,7 +124,7 @@ runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
 - Create 'BT-WebServer' module.
 - Create 'BT-RDSHashes' module?
 
-### **Readme.md Tasks:**
+### **Readme.md Tasks**
 ```powershell
 
 ```
