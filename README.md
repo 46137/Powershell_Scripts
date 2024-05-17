@@ -3,8 +3,6 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
 # Commands Table of Contents
-- [Powershell Scripts](#powershell-scripts)
-- [Commands Table of Contents](#commands-table-of-contents)
     - [**Powershell Overview**](#powershell-overview)
     - [**Scanning**](#scanning)
     - [**Remoting**](#remoting)
