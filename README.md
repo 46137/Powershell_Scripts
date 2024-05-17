@@ -3,13 +3,13 @@
 This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
 
 # Commands Table of Contents
-    - [**Powershell Overview**](#powershell-overview)
-    - [**Scanning**](#scanning)
-    - [**Remoting**](#remoting)
-    - [**System Information**](#system-information)
-    - [**Host Enumeration Tasks**](#host-enumeration-tasks)
-    - [**Modules Framework Tasks**](#modules-framework-tasks)
-    - [**Readme.md Tasks**](#readmemd-tasks)
+- [Powershell Overview](#powershell-overview)
+- [Scanning](#scanning)
+- [Remoting](#remoting)
+- [System Information](#system-information)
+- [Host Enumeration Tasks](#host-enumeration-tasks)
+- [Modules Framework Tasks](#modules-framework-tasks)
+- [Readme.md Tasks](#readmemd-tasks)
 
 ### **Powershell Overview**
 ```powershell
