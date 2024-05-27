@@ -18,7 +18,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Readme.md Tasks](#readmemd-tasks)
 
 ### **Powershell Overview**
-### __Powershell Overview__
+__Powershell Overview__
 ```powershell
 #Updating
 Update-Help
