@@ -6,7 +6,7 @@ This collection of scripts are being developed to aid a cyber analyst in host/ne
 - [Powershell Overview](#powershell-overview)
 - [Scanning](#scanning)
 - [Remoting](#remoting)
-  - WinRM
+  - [WinRM](#winrm)
   - WMIC
   - PSexec.exe
   - Runas.exe
@@ -72,7 +72,7 @@ New-Object System.Net.Sockets.TcpClient -ArgumentList [IP ADDRESS],[PORT]
 #Fast port scan.
 $Subnets = "10.10.10."#,"10.10.11."
 $IPs = 1..255
-$Port = 135 #Common ports: 135(Domain),5985/6(WinRM),22(SSH),3389(RDP)
+$Port = 135 #Common ports: 135(Domain),445(SMB),5985/6(WinRM),22(SSH),3389(RDP)
 $TimeoutMilliseconds = 50
 #Creates an array of active hosts.
 $Open_Port = @()
@@ -93,7 +93,7 @@ foreach ($Subnet in $Subnets){
 ```
 
 ### **Remoting**
-**WinRM**
+### WinRM
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
 Test-WSMan -ComputerName [IP ADDRESS]
