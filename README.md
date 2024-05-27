@@ -237,20 +237,40 @@ Read-Host -AsSecureString |ConvertFrom-SecureString |Out-File [OUTPUT\FILE\LOCAT
 
 ### **System Information**
 ```powershell
-whoami
+#Shows the system information of the endpoint.
+Systeminfo.exe
+#Or via powershell. (Slow)
 Get-ComputerInfo
-Systeminfo
+#Or via powershell. (Quick)
+Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property CSName, Caption, Version |Format-List
+```
+```powershell
+#Shows system date & time.
 [System.DateTime]::now
 [System.TimeZoneInfo]::Local
-Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory #condensed OS information
-Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -AutoSize #lists 32bit programs
-Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 64bit programs
+```
+```powershell
+#Installed applications. (Not accurate)
 Get-WmiObject -Class Win32_Product
-Get-WindowsDriver -Online -All #Shows driver information.
+#Installed 32bit applications.
+Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -AutoSize
+#Installed 64bit applications.
+Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap
+```
+```powershell
+#Shows driver information.
+Get-WindowsDriver -Online -All
 ```
 
 ### **Local Users & Groups**
 ```powershell
+#Name of logged in user.
+whoami.exe
+#Or via powershell.
+(Get-CimInstance Win32_ComputerSystem).Username
+```
+```powershell
+#
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
 Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap #finds account lastusetime, link with info from above
     Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq 'S-1-5-21-4181923950-2520291949-3870243015-9999'} | Remove-CimInstance #removes legacy profile info that is left after an account is deleted. 
