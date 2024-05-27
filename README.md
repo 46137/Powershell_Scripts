@@ -18,6 +18,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Readme.md Tasks](#readmemd-tasks)
 
 ### **Powershell Overview**
+### Powershell Overview
 ```powershell
 #Updating
 Update-Help
@@ -160,20 +161,34 @@ Copy-Item -Path [REMOTE\FILE\PATH] -Destination [LOCAL\FILE\PATH] -FromSession $
 ```
 
 ### WMIC
+WMIC commands use DCOM over port 135 to communicate with remote endpoints.
 ```powershell
-    wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
-    wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
-    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" OS GET Name #shows OS name, can use as a test
-    wmic /NODE:"ServerName" /USER:"yourdomain\administrator" service where caption="Windows Remote Management (WS-Management)" call startservice #starts service on a remote host
-
+#Displays hostname of the remote endpoint. (May need authentication)
+wmic /NODE:[NAME\IP] ComputerSystem GET Name
 ```
+```powershell
+#Displays OS name.
+wmic /NODE:[NAME\IP] /USER:[DOMAIN\USER] OS GET Name
+```
+```powershell
+#Starting a service.
+wmic /NODE:[NAME\IP] /USER:[DOMAIN\USER] Service where caption="Windows Remote Management (WS-Management)" call startservice
+```
+```powershell
+#Enabling PSRemoting.
+wmic /NODE:[NAME\IP] /USER:[DOMAIN\USER] process call create "powershell.exe -NoProfile -Command Enable-PSRemoting -Force"
+```
+
 ### PSexec.exe
 ```powershell
-    psexec.exe \\172.16.12.10 cmd #can also try this or hostname to connect over 135 & 445. 
-    psexec.exe \\172.16.12.10 -h -s powershell.exe Enable-PSRemoting -Force
-    psexec.exe \\172.16.12.10 -u "yourdomain\administrator" -p "password" -s C:\Windows\System32\winrm.cmd quickconfig -q  
-
+#Opening powershell on a remote endpoint. (May need authentication)
+psexec.exe \\[NAME\IP] powershell.exe
 ```
+```powershell
+#Enabling PSRemoting.
+psexec.exe \\[NAME\IP] -u [DOMAIN\USER] -p [PASSWORD] -h -s powershell.exe Enable-PSRemoting -Force
+```
+
 ### Runas.exe
 ```powershell
 runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
@@ -185,11 +200,24 @@ New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 
 Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
 ```
 ### **Running Scripts**
-Get-ExecutionPolicy -List #Shows the current state of the policies of the endpoint.
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned #RemoteSigned - Downloaded scripts must be signed by a trusted publisher.
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted #Unrestricted - No restrictions; all scripts can be run.
-#read-host -assecurestring | convertfrom-securestring | out-file C:\secure.txt <- Run this command once to generate your secure password file. 
-powershell.exe -executionpolicy bypass?
+```powershell
+#Shows the current state of the policies of the endpoint.
+Get-ExecutionPolicy -List
+#Setting to 'RemoteSigned' where downloaded scripts must be signed by a trusted publisher. (May need elevated privileges)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
+```
+```powershell
+#Creating a new powershell session to bypass the need for elevated privileges.
+Powershell.exe -ExecutionPolicy Bypass
+#Creating a new powershell version 2 session to bypass language mode.
+Powershell.exe -Version 2 -ExecutionPolicy Bypass
+```
+```powershell
+#Generates a secure password file to be used in scripts credentials. 
+Read-Host -AsSecureString |ConvertFrom-SecureString |Out-File [OUTPUT\FILE\LOCATION]
+```
+
+language mode
 
 ### **System Information**
 
