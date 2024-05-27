@@ -7,9 +7,11 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Scanning](#scanning)
 - [Remoting](#remoting)
   - [WinRM](#winrm)
-  - WMIC
-  - PSexec.exe
-  - Runas.exe
+  - [WMIC](#wmic)
+  - [PSexec.exe](#psexecexe)
+  - [Runas.exe](#runasexe)
+  - [RDP](#rdp)
+- [Running Scripts](#running-scripts)
 - [System Information](#system-information)
 - [Host Enumeration Tasks](#host-enumeration-tasks)
 - [Modules Framework Tasks](#modules-framework-tasks)
@@ -61,6 +63,12 @@ foreach ($Subnet in $Subnets){
 $Up_Hosts
 ```
 ```powershell
+#Enabling ping on Win10 which could have it disabled by default.
+New-NetFirewallRule -DisplayName "Allow Ping" -Direction Inbound -Protocol ICMPv4 -Action Allow -Enabled True -Profile Any -LocalPort Any -EdgeTraversalPolicy Allow
+#Enabling ping on Win7 which could have it disabled by default.
+netsh firewall set icmpsetting 8
+```
+```powershell
 #Slow port test. Common ports: 135(Domain),445(SMB),5985/6(WinRM),22(SSH),3389(RDP)
 Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
 ```
@@ -96,7 +104,7 @@ foreach ($Subnet in $Subnets){
 ### WinRM
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
-Test-WSMan -ComputerName [NAME/IP]
+Test-WSMan -ComputerName [NAME\IP]
 ```
 ```powershell
 #Needs to be enabled on the endpoint before trying to remote to it.
@@ -116,7 +124,7 @@ New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -Loc
 ```
 ```powershell
 #Starting a new local or domain session. Using a IP Address will use NTLM authentication & Computer Name will use Kerberos authentication.
-New-PSSession -ComputerName [NAME/IP] -Credential [DOMAIN\USER]
+New-PSSession -ComputerName [NAME\IP] -Credential [DOMAIN\USER]
 #Shows active sessions.
 Get-PSSession
 #Entering session
@@ -126,16 +134,23 @@ Get-PSSession |Remove-PSSession
 ```
 ```powershell
 #Running a local script on a remote endpoint.
-Invoke-Command -ComputerName [NAME/IP] -Credential [DOMAIN\USER] -FilePath C:\windows\file.ps1
+Invoke-Command -ComputerName [NAME\IP] -Credential [DOMAIN\USER] -FilePath C:\windows\file.ps1
 ```
 ```powershell
 #Running a command on a remote endpoint.
-Invoke-Command -ComputerName [NAME/IP] -Credential [DOMAIN\USER] -ScriptBlock {[COMMAND]}
+Invoke-Command -ComputerName [NAME\IP] -Credential [DOMAIN\USER] -ScriptBlock {[COMMAND]}
+```
+```powershell
+#Running a command on a remote endpoint with esablished credentials.
+$User = [DOMAIN\USER]
+$PWord = Get-Content [PATH\TO\SECURE\FILE] | ConvertTo-SecureString
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord
+Invoke-Command -ComputerName [NAME\IP] -Credential $Credential -ErrorAction SilentlyContinue -ScriptBlock {[COMMAND]}
 ```
 ```powershell
 #Moving & removing files in a session.
 #Create session.
-$Session = New-PSSession [NAME/IP] -Credential [DOMAIN\USER]
+$Session = New-PSSession [NAME\IP] -Credential [DOMAIN\USER]
 #Copy local file to remote endpoint.
 Copy-Item -Path [LOCAL\FILE\PATH] -ToSession $Session -Destination [REMOTE\FILE\PATH]
 #Removing file on remote endpoint.
@@ -144,9 +159,7 @@ Invoke-Command -Session $Session -ScriptBlock{Remove-Item -Path [PATH\TO\FILE] -
 Copy-Item -Path [REMOTE\FILE\PATH] -Destination [LOCAL\FILE\PATH] -FromSession $Session
 ```
 
-
-
-**WMIC**
+### WMIC
 ```powershell
     wmic #if winRM isn't enabled you can try and connect with wmic over port 135(RPC of TCP). Open terminal or cmd to enter a wmic prompt
     wmic /NODE:"172.16.12.10" computersystem get name #shows hostname of the endpoint
@@ -154,20 +167,29 @@ Copy-Item -Path [REMOTE\FILE\PATH] -Destination [LOCAL\FILE\PATH] -FromSession $
     wmic /NODE:"ServerName" /USER:"yourdomain\administrator" service where caption="Windows Remote Management (WS-Management)" call startservice #starts service on a remote host
 
 ```
-**PSexec.exe**
+### PSexec.exe
 ```powershell
     psexec.exe \\172.16.12.10 cmd #can also try this or hostname to connect over 135 & 445. 
     psexec.exe \\172.16.12.10 -h -s powershell.exe Enable-PSRemoting -Force
     psexec.exe \\172.16.12.10 -u "yourdomain\administrator" -p "password" -s C:\Windows\System32\winrm.cmd quickconfig -q  
 
 ```
-**Runas.exe**
+### Runas.exe
 ```powershell
 runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
 
 ```
-
-
+### RDP
+```powershell
+New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block #Blocking a port.
+Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
+```
+### **Running Scripts**
+Get-ExecutionPolicy -List #Shows the current state of the policies of the endpoint.
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned #RemoteSigned - Downloaded scripts must be signed by a trusted publisher.
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted #Unrestricted - No restrictions; all scripts can be run.
+#read-host -assecurestring | convertfrom-securestring | out-file C:\secure.txt <- Run this command once to generate your secure password file. 
+powershell.exe -executionpolicy bypass?
 
 ### **System Information**
 

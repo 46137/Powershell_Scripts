@@ -1,21 +1,10 @@
 ﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally.
 
 
-New-NetFirewallRule -DisplayName "Allow Ping" -Direction Inbound -Protocol ICMPv4 -Action Allow -Enabled True -Profile Any -LocalPort Any -EdgeTraversalPolicy Allow #Enable ping on Win10.
-New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block #Blocking a port.
-Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
-netsh firewall set icmpsetting 8 #Enable ping on Win7
-
 
 
 #Validate Credentials
 Add-Type -AssemblyName System.DirectoryServices.AccountManagement; $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext([System.DirectoryServices.AccountManagement.ContextType]::Domain, 'dwc'); $principalContext.ValidateCredentials('ubolt', 'FastestMan1')
-
-#RUNNING SCRIPTS
-Get-ExecutionPolicy -List #Shows the current state of the policies of the endpoint.
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned #RemoteSigned - Downloaded scripts must be signed by a trusted publisher.
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted #Unrestricted - No restrictions; all scripts can be run.
-
 
 #SYSTEM INFORMATION
 whoami
