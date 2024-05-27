@@ -191,14 +191,18 @@ psexec.exe \\[NAME\IP] -u [DOMAIN\USER] -p [PASSWORD] -h -s powershell.exe Enabl
 
 ### Runas.exe
 ```powershell
-runas /noprofile /user:dwc\ubolt cmd #testing opening cmd with credentials.
-
+#Starting a powershell or cmd session.
+runas /noprofile /user:dwc\ubolt powershell
 ```
+
 ### RDP
 ```powershell
-New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block #Blocking a port.
-Remove-NetFirewallRule -DisplayName "Block RDP" #Remove rules.
+#Blocking RDP firewall rule.
+New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 -Protocol TCP -Action Block
+#Removing RDP block rule.
+Remove-NetFirewallRule -DisplayName "Block RDP"
 ```
+
 ### **Running Scripts**
 ```powershell
 #Shows the current state of the policies of the endpoint.
@@ -213,11 +217,15 @@ Powershell.exe -ExecutionPolicy Bypass
 Powershell.exe -Version 2 -ExecutionPolicy Bypass
 ```
 ```powershell
+#Shows the current language mode state. ConstrainedLanguage constrains the use of certain features, NoLanguage disables all.
+$ExecutionContext.SessionState.LanguageMode
+#Changing language mode for that powershell session.
+$ExecutionContext.SessionState.LanguageMode = "FullLanguage"
+```
+```powershell
 #Generates a secure password file to be used in scripts credentials. 
 Read-Host -AsSecureString |ConvertFrom-SecureString |Out-File [OUTPUT\FILE\LOCATION]
 ```
-
-language mode
 
 ### **System Information**
 
