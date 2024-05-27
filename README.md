@@ -1,7 +1,7 @@
-# <p style="text-align: center;">POWERSHELL</p>
+<h1 style="text-align: center;">POWERSHELL</h1>
 
 
-This collection of scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains single commands that can be used for quick analysis.
+This collection of commands & scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains short commands that can be used for quick analysis.
 
 # Commands Table of Contents
 - [Powershell Overview](#powershell-overview)
