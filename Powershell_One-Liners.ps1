@@ -1,23 +1,4 @@
-﻿#File's intent: This is a collection of one-liners to be used when investigating a device. Best used with invoke-command or locally.
-
-
-
-
-#Validate Credentials
-Add-Type -AssemblyName System.DirectoryServices.AccountManagement; $principalContext = New-Object System.DirectoryServices.AccountManagement.PrincipalContext([System.DirectoryServices.AccountManagement.ContextType]::Domain, 'dwc'); $principalContext.ValidateCredentials('ubolt', 'FastestMan1')
-
-#SYSTEM INFORMATION
-whoami
-Get-ComputerInfo
-Systeminfo
-[System.DateTime]::now
-[System.TimeZoneInfo]::Local
-Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property Caption, Version, CSName, OSArchitecture, WindowsDirectory #condensed OS information
-Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -AutoSize #lists 32bit programs
-Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap #lists 64bit programs
-Get-WmiObject -Class Win32_Product
-Get-WindowsDriver -Online -All #Shows driver information.
-
+﻿
 #ACTIVE DIRECTORY
 Get-ADDomain #Shows information on the domain, inc DNS name.
 (Get-ADDomain).domainmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
@@ -64,57 +45,12 @@ get-dnsserverqueryresolutionpolicy
 Clear-DnsClientCache # Clear local cache on all/effected hosts.
 
 #USER/GROUPS
-Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap #finds detailed accounts
-Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap #finds account lastusetime, link with info from above
-    Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq 'S-1-5-21-4181923950-2520291949-3870243015-9999'} | Remove-CimInstance #removes legacy profile info that is left after an account is deleted. 
-net user #uses net.exe which is bad.
-Get-LocalUser #basic but get-wmi above is better
-    Remove-LocalUser -Name "Bob"
-net use # checks for shared resources like mapped drives
-Get-LocalGroupMember -Group Administrators |Select-Object -Property ObjectClass, Name, PrincipalSource, SID #detailed
-net localgroup "Administrators"
+
 
 #IP/CONNECTIONS/NETWORK
-ipconfig /all 
-Get-NetIPConfiguration -Detailed # shows all fields.
-Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
-Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # shows all interfaces
-Get-NetIPAddress
-Get-NetAdapter # shows interfaces including MAC addresses.
-ipconfig /displaydns #shows history of the dns resolver
-Get-DnsClientCache |Format-Table -Wrap
-Get-NetIPInterface #shows ip interfaces
-    Get-NetRoute -InterfaceIndex 5 #shows routing for chosen interface
 
-netstat -nao
-Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
-Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #adds process and creation time
-Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
-    tasklist /svc |findstr 21664 #shows further information on the suspect PID
-Get-NetUDPEndpoint |Select-Object -Property LocalAddress,LocalPort,RemoteAddress,RemotePort,@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table -Wrap
-Get-Content C:\Windows\System32\drivers\etc\hosts
-Get-Content C:\Windows\System32\drivers\etc\services
-Get-Content C:\Windows\System32\drivers\etc\networks
-
-Get-WmiObject -Class Win32_NetworkAdapter |Select-Object -Property NetConnectionStatus,ServiceName,Name,NetConnectionID,AdapterType,MACAddress |Sort-Object -Property NetConnectionStatus -Descending |Format-Table #MAC
-Get-NetNeighbor -AddressFamily IPv4 |Sort-Object -Unique -Property State -Descending #ARP IPv4
-Get-NetNeighbor -AddressFamily IPv6 |Sort-Object -Unique -Property State -Descending #ARP IPv6
 
 #PROCESS/SERVICES (wsmprovhost = is the process name of a remote powershell session)
-Get-Process
-    Get-Process svchost -FileVersionInfo -ErrorAction SilentlyContinue |Format-List
-    Stop-Process -Name "notepad"
-    Stop-Process -Id 18252
-Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path
-Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table # Recent processes with path.
-Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle #gets all processes that have a main window
-
-Get-Service |Format-Table -Wrap
-Get-Service |Where-Object {$_.Status -eq "Running"} |Format-Table -Wrap
-Get-Service "wmi*"
-    Stop-Service -Name "sysmon"
-    .\sc.exe delete sysmon
-Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 
 #PERSISTANCE METHODS
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
