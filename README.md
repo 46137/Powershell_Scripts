@@ -38,7 +38,28 @@ Get-Command *process
 #Slow ping sweep.
 1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue}
 ```
-For fast ping sweep look at **Auto_Ping-Scan.ps1**
+```powershell
+#Fast ping sweep.
+$Subnets = '10.10.10'#,'10.10.11'
+#Creates an array of active hosts via ICMP.
+$Up_Hosts = @()
+foreach ($Subnet in $Subnets){
+    $IPs = 1..254 | ForEach-Object {"$($Subnet).$_"}
+    $Ping = $IPs|ForEach-Object {
+        #(New-Object Net.NetworkInformation.Ping).SendPingAsync($_,250) 
+        [Net.NetworkInformation.Ping]::New().SendPingAsync($_, 250) #PowerShell v5
+    }
+    [Threading.Tasks.Task]::WaitAll($Ping)
+    $Ping.Result | ForEach-Object {
+        if($_.Status -eq 'Success'){
+            $Up_Hosts += $_.Address.IPAddressToString
+            $IP = $_.Address.IPAddressToString
+            "$IP - Hosts Up"
+        }
+    }
+}
+$Up_Hosts
+```
 ```powershell
 #Slow port test. Common ports: 135(Domain),445(SMB),5985/6(WinRM),22(SSH),3389(RDP)
 Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
@@ -47,7 +68,29 @@ Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
 #Fast port test.
 New-Object System.Net.Sockets.TcpClient -ArgumentList [IP ADDRESS],[PORT]
 ```
-For fast port sweep look at **Auto_Port-Scan.ps1**
+```powershell
+#Fast port scan.
+$Subnets = "10.10.10."#,"10.10.11."
+$IPs = 1..255
+$Port = 135 #Common ports: 135(Domain),5985/6(WinRM),22(SSH),3389(RDP)
+$TimeoutMilliseconds = 50
+#Creates an array of active hosts.
+$Open_Port = @()
+foreach ($Subnet in $Subnets){
+    $IPs | ForEach-Object{
+        $IP = $Subnet + $_
+        $Socket = [System.Net.Sockets.TcpClient]::new()
+        $Result = $Socket.BeginConnect($IP, $Port, $null, $null) # Null 1 is optional callback methods, null 2 is operation state for callback method.
+        $Success = $Result.AsyncWaitHandle.WaitOne($TimeoutMilliseconds)
+            if ($Success -and $Socket.Connected){
+                $Open_Port += $IP
+                "$IP - Open Port: $Port"
+                $Socket.Close()
+            }
+        Write-Progress -Activity "Scanning Network" -Status "$Subnet$_" -PercentComplete (($_/($IPs.Count))*100) # Progress bar.
+    }
+}
+```
 
 ### **Remoting**
 **WinRM**
