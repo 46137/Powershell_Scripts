@@ -1,5 +1,4 @@
-<h3 style="text-align: center;">POWERSHELL</h3>
-
+# POWERSHELL
 
 This collection of commands & scripts are being developed to aid a cyber analyst in host/network enumeration and investigation of a live network. The readme.md below contains short commands that can be used for quick analysis.
 
@@ -97,7 +96,7 @@ foreach ($Subnet in $Subnets){
 ### WinRM
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
-Test-WSMan -ComputerName [IP ADDRESS]
+Test-WSMan -ComputerName [NAME/IP]
 ```
 ```powershell
 #Needs to be enabled on the endpoint before trying to remote to it.
@@ -112,20 +111,37 @@ Set-Item WSMan:\localhost\client\trustedhosts "172.15.2.*"
 Set-Item WSMan:\localhost\client\trustedhosts
 ```
 ```powershell
-New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow #Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
-New-PSSession -ComputerName 172.16.12.10 -Credential Administrator #This will start a session but keep you local (For credentials it can be local or domain)
-Get-PSSession #Shows active sessions.
-Enter-PSSession 8 
-Get-PSSession |Remove-PSSession #Removes all sessions.
-
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -FilePath C:\windows\file.ps1 #running a local script on a remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\file.exe'} #running a file on the remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-ChildItem C:\Users\Bob\Desktop} #viewing files on remote box
-Invoke-Command -ComputerName 172.16.1.53 -Credential Administrator -ScriptBlock {Get-Content C:\Users\Bob\Desktop\Names.txt} #viewing contents of file on remote box
-
-$session=New-PSSession -ComputerName 172.16.1.51 -Credential Administrator #create session and copy item from it to local box
-Copy-Item -Path 'C:\winlog.msi' -ToSession $session -Destination 'C:\winlog.msi' #copy a file to that session
-Invoke-Command -ComputerName 172.16.1.51 -Credential Administrator -ScriptBlock {Start-Process -FilePath 'C:\winlog.msi' Get-Service winlogbeat} #run that file and show if the service is up
+#Opening port 5985 on endpoint if 'Enable-PsRemoting' doesn't work.
+New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -LocalPort 5985 -Protocol TCP -Action Allow
+```
+```powershell
+#Starting a new local or domain session. Using a IP Address will use NTLM authentication & Computer Name will use Kerberos authentication.
+New-PSSession -ComputerName [NAME/IP] -Credential [DOMAIN\USER]
+#Shows active sessions.
+Get-PSSession
+#Entering session
+Enter-PSSession [NUMBER]
+#Removing all sessions. 
+Get-PSSession |Remove-PSSession
+```
+```powershell
+#Running a local script on a remote endpoint.
+Invoke-Command -ComputerName [NAME/IP] -Credential [DOMAIN\USER] -FilePath C:\windows\file.ps1
+```
+```powershell
+#Running a command on a remote endpoint.
+Invoke-Command -ComputerName [NAME/IP] -Credential [DOMAIN\USER] -ScriptBlock {[COMMAND]}
+```
+```powershell
+#Moving & removing files in a session.
+#Create session.
+$Session = New-PSSession [NAME/IP] -Credential [DOMAIN\USER]
+#Copy local file to remote endpoint.
+Copy-Item -Path [LOCAL\FILE\PATH] -ToSession $Session -Destination [REMOTE\FILE\PATH]
+#Removing file on remote endpoint.
+Invoke-Command -Session $Session -ScriptBlock{Remove-Item -Path [PATH\TO\FILE] -Recurse -Force}
+#Copy remote file to local host.
+Copy-Item -Path [REMOTE\FILE\PATH] -Destination [LOCAL\FILE\PATH] -FromSession $Session
 ```
 
 
