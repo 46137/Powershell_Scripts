@@ -26,7 +26,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
   - [AD Sinkhole](#ad-sinkhole)
 - [Tasks](#readmemd-tasks)
 
-### **Powershell Overview**
+## **Powershell Overview**
 ```powershell
 #Updating
 Update-Help
@@ -44,7 +44,7 @@ Get-Command *process
 (Measure-Command{[COMMAND]}).TotalSeconds
 ```
 
-### **Scanning**
+## **Scanning**
 ### Ping Scans
 ```powershell
 #Slow ping sweep.
@@ -111,7 +111,7 @@ foreach ($Subnet in $Subnets){
 }
 ```
 
-### **Remoting**
+## **Remoting**
 ### WinRM
 ```powershell
 #Tests if the WinRM service is running on that endpoint.
@@ -213,7 +213,7 @@ New-NetFirewallRule -DisplayName "Block RDP" -Direction Inbound -LocalPort 3389 
 Remove-NetFirewallRule -DisplayName "Block RDP"
 ```
 
-### **Running Scripts**
+## **Running Scripts**
 ```powershell
 #Shows the current state of the policies of the endpoint.
 Get-ExecutionPolicy -List
@@ -237,7 +237,7 @@ $ExecutionContext.SessionState.LanguageMode = "FullLanguage"
 Read-Host -AsSecureString |ConvertFrom-SecureString |Out-File [OUTPUT\FILE\LOCATION]
 ```
 
-### **System Information**
+## **System Information**
 ```powershell
 #Shows the system information of the endpoint.
 Systeminfo.exe
@@ -264,7 +264,7 @@ Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Se
 Get-WindowsDriver -Online -All
 ```
 
-### **Local Users & Groups**
+## **Local Users & Groups**
 ### Users
 ```powershell
 #Name of logged in user.
@@ -296,7 +296,7 @@ net localgroup [GROUPNAME]
 Get-LocalGroupMember -Group [GROUPNAME] |Select-Object -Property ObjectClass, Name, PrincipalSource, SID
 ```
 
-### **IP & Network Connections**
+## **IP & Network Connections**
 ### IP Information
 ```powershell
 #Shows IP information.
@@ -363,7 +363,7 @@ Get-Service "wmi*"
 Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
 ```
 
-### **Shares & Files**
+## **Shares & Files**
 ```powershell
 #Common paths to look at for malicious files:
     #C:\Windows\Temp
@@ -430,7 +430,7 @@ Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recen
 
 ```
 
-### **Persistence Methods**
+## **Persistence Methods**
 ```powershell
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
 Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
@@ -476,7 +476,7 @@ Get-smbopenfile #further info
 
 ```
 
-### **Events**
+## **Events**
 ```powershell
 Get-EventLog -list
 Get-EventLog -LogName Application |Format-Table -Wrap
@@ -489,7 +489,7 @@ Get-WinEvent -Path example.evtx |Out-GridView #Static analysis in GUI.
 Get-WinEvent -Path example.evtx |Where-Object{$_.Message -like "*fail*"} |Format-Table -Wrap
 ```
 
-### **Active Directory**
+## **Active Directory**
 ### Domain
 ```powershell
 Get-ADDomain #Shows information on the domain, inc DNS name.
@@ -546,7 +546,7 @@ get-dnsserverqueryresolutionpolicy
 Clear-DnsClientCache # Clear local cache on all/effected hosts.
 ```
 
-### **Readme.md Tasks**
+## **Readme.md Tasks**
 ```powershell
 
 ```
@@ -556,12 +556,12 @@ Clear-DnsClientCache # Clear local cache on all/effected hosts.
 - Add section for get-mail (mailserver).
 - Network shares ADMIN$, IPC$, c$
 
-### **Host Enumeration Tasks**
+## **Host Enumeration Tasks**
 - Rework 'Payload_KeyTerrain-Survey'.
 - Decide if to complete 'Manual_Full-Survey'.
 - Create 'Auto CIM-OS-Detection'?
 
-### **Modules Framework Tasks**
+## **Modules Framework Tasks**
 - Find a better way in 'Auto_Invoke-Modules' to call modules (not via a txt file).
 - Complete 'BT-Persistence' module.
 - Complete 'BT-PII' module.
