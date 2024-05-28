@@ -16,7 +16,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Local Users & Groups](#local-users--groups)
 - [IP & Network Connections](#ip--network-connections)
 - [Processes & Services](#processes--services)
-- [Shares & Files](#shares--files)
+- [Files & Shares](#files--shares)
 - [Persistence Methods](#Persistence-methods)
 - [Events](#events)
 - [Active Directory](#active-directory)
@@ -316,7 +316,10 @@ Get-NetAdapter
 #Routing information on chosed interface.
 Get-NetRoute -InterfaceIndex [NUMBER]
 ```
+### DNS
 ```powershell
+#Shows local FQDN->IP resolution.
+Get-Content C:\Windows\System32\drivers\etc\hosts
 #Shows DNS cache.
 ipconfig.exe /displaydns
 #Or via powershell.
@@ -329,46 +332,101 @@ ipconfig.exe /flushdns
 Clear-DNSClientCache
 ```
 ### Network Connections
-
-netstat -nao
-Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
-Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table #adds process and creation time
-Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table #simplfied with process
-    tasklist /svc |findstr 21664 #shows further information on the suspect PID
+```powershell
+#Shows network connections.
+netstat.exe -nao
+```
+```powershell
+#Or via powershell.
+Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table
+```
+```powershell
+#Shows TCP network connections with linked process and creation time.
+Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table
+```
+```powershell
+#Shows TCP network connections with linked process and creation time. (Filetered)
+Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
+```
+```powershell
+#Shows UDP with linked process.
 Get-NetUDPEndpoint |Select-Object -Property LocalAddress,LocalPort,RemoteAddress,RemotePort,@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table -Wrap
-Get-Content C:\Windows\System32\drivers\etc\hosts
-Get-Content C:\Windows\System32\drivers\etc\services
+```
+```powershell
+#Displays file content. File generally used by apps doing loopback connections.
 Get-Content C:\Windows\System32\drivers\etc\networks
-
-Get-WmiObject -Class Win32_NetworkAdapter |Select-Object -Property NetConnectionStatus,ServiceName,Name,NetConnectionID,AdapterType,MACAddress |Sort-Object -Property NetConnectionStatus -Descending |Format-Table #MAC
-Get-NetNeighbor -AddressFamily IPv4 |Sort-Object -Unique -Property State -Descending #ARP IPv4
-Get-NetNeighbor -AddressFamily IPv6 |Sort-Object -Unique -Property State -Descending #ARP IPv6
+```
+```powershell
+#Shows MAC information.
+Get-WmiObject -Class Win32_NetworkAdapter |Select-Object -Property NetConnectionStatus,ServiceName,Name,NetConnectionID,AdapterType,MACAddress |Sort-Object -Property NetConnectionStatus -Descending |Format-Table
+```
+```powershell
+#Shows ARP IPv4
+Get-NetNeighbor -AddressFamily IPv4 |Sort-Object -Unique -Property State -Descending
+#Shows ARP IPv6
+Get-NetNeighbor -AddressFamily IPv6 |Sort-Object -Unique -Property State -Descending
 ```
 
-### **Processes & Services**
+## **Processes & Services**
+### Processes
 ```powershell
+#Shows processes.
+tasklist.exe
+#Or via powershell. (Basic)
 Get-Process
-    Get-Process svchost -FileVersionInfo -ErrorAction SilentlyContinue |Format-List
-    Stop-Process -Name "notepad"
-    Stop-Process -Id 18252
-Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap #shows additional path
-Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table # Recent processes with path.
-Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle #gets all processes that have a main window
-
+#Shows processes with PPID & path.
+Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap
+```
+```powershell
+#Shows recent processes with PPID & path.
+Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table
+```
+```powershell
+#Shows all processes that have a main window.
+Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle
+```
+```powershell
+#Shows PID information. (Can also use -Name)
+Get-Process -Id [NUMBER] -FileVersionInfo -ErrorAction SilentlyContinue |Format-List
+#Kill process. (Can also use -Name)
+Stop-Process -Id 18252
+```
+### Services
+```powershell
+#Shows services.
+sc.exe query
+#Or via powershell. (Basic)
 Get-Service |Format-Table -Wrap
-Get-Service |Where-Object {$_.Status -eq "Running"} |Format-Table -Wrap
-Get-Service "wmi*"
-    Stop-Service -Name "sysmon"
-    .\sc.exe delete sysmon
-Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap #shows pid, additional path
+```
+```powershell
+#Shows services with linked PID and path.
+Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap
+```
+```powershell
+#Shows running services with linked PID and path.
+Get-WmiObject -Class Win32_Service |Where-Object {$_.State -eq "Running"} |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap
+```
+```powershell
+#Stopping a service.
+Stop-Service -Name [NAME]
+#Remove a service
+Remove-Service -Name [NAME]
+#Or
+sc.exe delete [NAME]
+```
+```powershell
+#List port numbers for well known services.
+Get-Content C:\Windows\System32\drivers\etc\services
 ```
 
-## **Shares & Files**
+## **Files & Shares**
+Common paths to look at for malicious files:
+- C:\Windows\Temp
+- C:\Users\Administrator\Downloads
+- C:\Users\Administrator\AppData\Local\Temp
+
 ```powershell
-#Common paths to look at for malicious files:
-    #C:\Windows\Temp
-    #C:\Users\Administrator\Downloads
-    #C:\Users\Administrator\AppData\Local\Temp
+
 
 net use # checks for shared resources like mapped drives
 
