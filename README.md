@@ -307,8 +307,12 @@ Get-NetIPAddress
 ```powershell
 #Shows all interfaces. (Filtered)
 Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
+```
+```powershell
 #Shows active interfaces. (Filtered)
 Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
+```
+```powershell
 #Shows all interfaces incuding MAC address.
 Get-NetAdapter
 ```
@@ -420,31 +424,36 @@ Get-Content C:\Windows\System32\drivers\etc\services
 ```
 
 ## **Files & Shares**
+### Files
 Common paths to look at for malicious files:
 - C:\Windows\Temp
 - C:\Users\Administrator\Downloads
 - C:\Users\Administrator\AppData\Local\Temp
 
 ```powershell
-
-
-net use # checks for shared resources like mapped drives
-
-(Get-ChildItem -Path C:\Windows\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
-Get-ChildItem -Path C:\Windows\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
-Get-AuthenticodeSignature -FilePath C:\Windows\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid
-(Get-ChildItem -Path C:\Windows\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
-Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName #shows contents of folder
-Get-AuthenticodeSignature -FilePath C:\Users\Administrator\AppData\Local\Temp\* |Where-Object {$_.Status -ne "Valid"} # Checks for files that aren't valid 
-(Get-ChildItem -Path C:\Users\Administrator\AppData\Local\Temp).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 hash values for files
-
-Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap #USB connections
-Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName #USB running connections
-
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @("msupdater.exe", "ssdpsvc.dll", "msacem.dll", "mrpmsg.dll", "restore.dat", "index.dat", "sethc.exe") | Format-List FullName
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @("AcroRd32Info.exe", "igfxHK", "news.rinpocheinfo.com", "d.txt", "127.0.0.1.txt", "mim.exe", "shell.gif", "tests.jsp") | Format-List FullName
+#Shows content of folder.
+Get-ChildItem -Path [FOLDER\PATH] |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName
+```
+```powershell
+#Shows content of folder including file hashes.
+(Get-ChildItem -Path [FOLDER\PATH]).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
+```
+```powershell
+#Checks folder for invalid files.
+Get-AuthenticodeSignature -FilePath [FOLDER\PATH\*] |Where-Object {$_.Status -ne "Valid"}
+```
+```powershell
+#Checks folders for specific files.
+Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @([FILE1], [FILE2]) | Format-List FullName
+```
+```powershell
+#Checks folders for files types.
 Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @("*.exe", "*.log") | Format-List FullName
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include "test.txt"  | Format-List FullName
+```
+```powershell
+
+>>>>Here
+
 Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName #recent files used, also try 'LastAccessTime' or 'CreationTime'
 Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include "*.exe" |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName #recent executables used
 Get-ChildItem \\.\pipe\ #shows named pipes
@@ -462,6 +471,10 @@ Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -E
     Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
     Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 
+Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap #USB connections
+Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName #USB running connections
+
+net use # checks for shared resources like mapped drives
 Get-FileShare
 Get-SmbShare
 
