@@ -14,7 +14,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Running Scripts](#running-scripts)
 - [System Information](#system-information)
 - [Local Users & Groups](#local-users--groups)
-- [Network Connections](#network-connections)
+- [IP & Network Connections](#ip--network-connections)
 - [Processes & Services](#processes--services)
 - [Shares & Files](#shares--files)
 - [Persistence Methods](#Persistence-methods)
@@ -45,6 +45,7 @@ Get-Command *process
 ```
 
 ### **Scanning**
+### Ping Scans
 ```powershell
 #Slow ping sweep.
 1..254 | ForEach-Object { Test-Connection -count 1 127.0.0.$_ -ErrorAction SilentlyContinue}
@@ -77,6 +78,7 @@ New-NetFirewallRule -DisplayName "Allow Ping" -Direction Inbound -Protocol ICMPv
 #Enabling ping on Win7 which could have it disabled by default.
 netsh firewall set icmpsetting 8
 ```
+### Port Scans
 ```powershell
 #Slow port test. Common ports: 135(Domain),445(SMB),5985/6(WinRM),22(SSH),3389(RDP)
 Test-NetConnection -Port [PORT] -ComputerName [IP ADDRESS]
@@ -200,7 +202,7 @@ psexec.exe \\[NAME\IP] -u [DOMAIN\USER] -p [PASSWORD] -h -s powershell.exe Enabl
 ### Runas.exe
 ```powershell
 #Starting a powershell or cmd session.
-runas /noprofile /user:dwc\ubolt powershell
+runas.exe /noprofile /user:[DOMAIN\USER] powershell
 ```
 
 ### RDP
@@ -263,6 +265,7 @@ Get-WindowsDriver -Online -All
 ```
 
 ### **Local Users & Groups**
+### Users
 ```powershell
 #Name of logged in user.
 whoami.exe
@@ -285,6 +288,7 @@ Remove-LocalUser -Name [NAME]
 #To remove legacy profiles left after an account is deleted.
 Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq [SID]} | Remove-CimInstance
 ```
+### Groups
 ```powershell
 #Shows local group details. (Basic)
 net localgroup [GROUPNAME]
@@ -292,18 +296,39 @@ net localgroup [GROUPNAME]
 Get-LocalGroupMember -Group [GROUPNAME] |Select-Object -Property ObjectClass, Name, PrincipalSource, SID
 ```
 
-### **Network Connections**
+### **IP & Network Connections**
+### IP Information
 ```powershell
-ipconfig /all 
-Get-NetIPConfiguration -Detailed # shows all fields.
-Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # better ipconfig, shows active interfaces.
-Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,IPv4DefaultGateway # shows all interfaces
+#Shows IP information.
+ipconfig.exe /all
+#Or via powershell.
 Get-NetIPAddress
-Get-NetAdapter # shows interfaces including MAC addresses.
-ipconfig /displaydns #shows history of the dns resolver
+```
+```powershell
+#Shows all interfaces. (Filtered)
+Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
+#Shows active interfaces. (Filtered)
+Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
+#Shows all interfaces incuding MAC address.
+Get-NetAdapter
+```
+```powershell
+#Routing information on chosed interface.
+Get-NetRoute -InterfaceIndex [NUMBER]
+```
+```powershell
+#Shows DNS cache.
+ipconfig.exe /displaydns
+#Or via powershell.
 Get-DnsClientCache |Format-Table -Wrap
-Get-NetIPInterface #shows ip interfaces
-    Get-NetRoute -InterfaceIndex 5 #shows routing for chosen interface
+```
+```powershell
+#Clear DNS cache.
+ipconfig.exe /flushdns
+#Or via powershell.
+Clear-DNSClientCache
+```
+### Network Connections
 
 netstat -nao
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table #better netstat
