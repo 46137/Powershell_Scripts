@@ -34,7 +34,7 @@ Update-Help
 #Searching for commandlets.
 Get-Help process
 
-#Shows command types of the search.
+#Displays the command types of the search.
 Get-Command *process
 
 #Lists the powershell version.
@@ -136,7 +136,7 @@ New-NetFirewallRule -DisplayName "Allow WinRM Port 5985" -Direction Inbound -Loc
 ```powershell
 #Starting a new local or domain session. Using a IP Address will use NTLM authentication & Computer Name will use Kerberos authentication.
 New-PSSession -ComputerName [NAME\IP] -Credential [DOMAIN\USER]
-#Shows active sessions.
+#Displays the active sessions.
 Get-PSSession
 #Entering session
 Enter-PSSession [NUMBER]
@@ -215,7 +215,7 @@ Remove-NetFirewallRule -DisplayName "Block RDP"
 
 ## **Running Scripts**
 ```powershell
-#Shows the current state of the policies of the endpoint.
+#Displays the the current state of the policies of the endpoint.
 Get-ExecutionPolicy -List
 #Setting to 'RemoteSigned' where downloaded scripts must be signed by a trusted publisher. (May need elevated privileges)
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned
@@ -227,7 +227,7 @@ Powershell.exe -ExecutionPolicy Bypass
 Powershell.exe -Version 2 -ExecutionPolicy Bypass
 ```
 ```powershell
-#Shows the current language mode state. ConstrainedLanguage constrains the use of certain features, NoLanguage disables all.
+#Displays the the current language mode state. ConstrainedLanguage constrains the use of certain features, NoLanguage disables all.
 $ExecutionContext.SessionState.LanguageMode
 #Changing language mode for that powershell session.
 $ExecutionContext.SessionState.LanguageMode = "FullLanguage"
@@ -239,7 +239,7 @@ Read-Host -AsSecureString |ConvertFrom-SecureString |Out-File [OUTPUT\FILE\LOCAT
 
 ## **System Information**
 ```powershell
-#Shows the system information of the endpoint.
+#Displays the the system information of the endpoint.
 Systeminfo.exe
 #Or via powershell. (Slow)
 Get-ComputerInfo
@@ -247,7 +247,7 @@ Get-ComputerInfo
 Get-WmiObject -Class Win32_OperatingSystem |Select-Object -Property CSName, Caption, Version |Format-List
 ```
 ```powershell
-#Shows system date & time.
+#Displays the system date & time.
 [System.DateTime]::now
 [System.TimeZoneInfo]::Local
 ```
@@ -260,7 +260,7 @@ Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uni
 Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Select-Object InstallDate, DisplayName, DisplayVersion, Publisher, InstallSource |Sort-Object InstallDate -Descending |Format-Table -Wrap
 ```
 ```powershell
-#Shows driver information.
+#Displays the driver information.
 Get-WindowsDriver -Online -All
 ```
 
@@ -273,13 +273,13 @@ whoami.exe
 (Get-CimInstance Win32_ComputerSystem).Username
 ```
 ```powershell
-#Shows user accounts.
+#Displays the user accounts.
 net.exe user
 #Or via powershell. (Basic)
 Get-LocalUser
-#Shows detailed accounts.
+#Displays the detailed accounts.
 Get-WmiObject -Class win32_useraccount |Select-Object -Property AccountType,Name,FullName,Domain,SID |Format-Table -Wrap
-#Shows last login time in association with details above.
+#Displays the last login time in association with details above.
 Get-WmiObject -Class win32_userprofile |Select-Object -Property lastusetime,localpath,SID |Sort-Object lastusetime -Descending |Format-Table -Wrap
 ```
 ```powershell
@@ -290,7 +290,7 @@ Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq [SID]} | Remo
 ```
 ### Groups
 ```powershell
-#Shows local group details. (Basic)
+#Displays the local group details. (Basic)
 net localgroup [GROUPNAME]
 #Or via powershell.
 Get-LocalGroupMember -Group [GROUPNAME] |Select-Object -Property ObjectClass, Name, PrincipalSource, SID
@@ -299,21 +299,21 @@ Get-LocalGroupMember -Group [GROUPNAME] |Select-Object -Property ObjectClass, Na
 ## **IP & Network Connections**
 ### IP Information
 ```powershell
-#Shows IP information.
+#Displays the IP information.
 ipconfig.exe /all
 #Or via powershell.
 Get-NetIPAddress
 ```
 ```powershell
-#Shows all interfaces. (Filtered)
+#Displays the all interfaces. (Filtered)
 Get-NetIPConfiguration |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
 ```
 ```powershell
-#Shows active interfaces. (Filtered)
+#Displays the active interfaces. (Filtered)
 Get-NetIPConfiguration | Where-Object {$_.IPv4DefaultGateway -ne $null -and $_.NetAdapter.Status -ne "Disconnected"} |Select-Object -Property InterfaceAlias,IPv4Address,InterfaceIndex,IPv4DefaultGateway
 ```
 ```powershell
-#Shows all interfaces incuding MAC address.
+#Displays the all interfaces incuding MAC address.
 Get-NetAdapter
 ```
 ```powershell
@@ -322,9 +322,9 @@ Get-NetRoute -InterfaceIndex [NUMBER]
 ```
 ### DNS
 ```powershell
-#Shows local FQDN->IP resolution.
+#Displays the local FQDN->IP resolution.
 Get-Content C:\Windows\System32\drivers\etc\hosts
-#Shows DNS cache.
+#Displays the DNS cache.
 ipconfig.exe /displaydns
 #Or via powershell.
 Get-DnsClientCache |Format-Table -Wrap
@@ -337,7 +337,7 @@ Clear-DNSClientCache
 ```
 ### Network Connections
 ```powershell
-#Shows network connections.
+#Displays the network connections.
 netstat.exe -nao
 ```
 ```powershell
@@ -345,15 +345,15 @@ netstat.exe -nao
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess |Format-Table
 ```
 ```powershell
-#Shows TCP network connections with linked process and creation time.
+#Displays the TCP network connections with linked process and creation time.
 Get-NetTCPConnection |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table
 ```
 ```powershell
-#Shows TCP network connections with linked process and creation time. (Filetered)
+#Displays the TCP network connections with linked process and creation time. (Filetered)
 Get-NetTCPConnection |Where-Object {$_.LocalAddress -ne "0.0.0.0" -and $_.LocalAddress -ne "127.0.0.1" -and $_.LocalAddress -ne "::" -and $_.LocalAddress -ne "::1"} |Select-Object -Property CreationTime, LocalAddress, LocalPort, RemoteAddress, RemotePort, State, AppliedSetting, OwningProcess, @{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Sort-Object -Property CreationTime -Descending |Format-Table
 ```
 ```powershell
-#Shows UDP with linked process.
+#Displays the UDP with linked process.
 Get-NetUDPEndpoint |Select-Object -Property LocalAddress,LocalPort,RemoteAddress,RemotePort,@{Name="Process";Expression={(Get-Process -Id $_.OwningProcess).ProcessName}} |Format-Table -Wrap
 ```
 ```powershell
@@ -361,53 +361,53 @@ Get-NetUDPEndpoint |Select-Object -Property LocalAddress,LocalPort,RemoteAddress
 Get-Content C:\Windows\System32\drivers\etc\networks
 ```
 ```powershell
-#Shows MAC information.
+#Displays the MAC information.
 Get-WmiObject -Class Win32_NetworkAdapter |Select-Object -Property NetConnectionStatus,ServiceName,Name,NetConnectionID,AdapterType,MACAddress |Sort-Object -Property NetConnectionStatus -Descending |Format-Table
 ```
 ```powershell
-#Shows ARP IPv4
+#Displays the ARP IPv4
 Get-NetNeighbor -AddressFamily IPv4 |Sort-Object -Unique -Property State -Descending
-#Shows ARP IPv6
+#Displays the ARP IPv6
 Get-NetNeighbor -AddressFamily IPv6 |Sort-Object -Unique -Property State -Descending
 ```
 
 ## **Processes & Services**
 ### Processes
 ```powershell
-#Shows processes.
+#Displays the processes.
 tasklist.exe
 #Or via powershell. (Basic)
 Get-Process
-#Shows processes with PPID & path.
+#Displays the processes with PPID & path.
 Get-WmiObject -Class Win32_Process |Select-Object ProcessId, ParentProcessId, Name, ExecutablePath |Format-Table -Wrap
 ```
 ```powershell
-#Shows recent processes with PPID & path.
+#Displays the recent processes with PPID & path.
 Get-WmiObject -Class win32_process |ForEach-Object {New-Object -Type PSCustomObject -Property @{'CreationDate' = $_.converttodatetime($_.creationdate); 'PID' = $_.ProcessID; 'PPID' = $_.ParentProcessID; 'Name' = $_.Name; 'Path' = $_.ExecutablePath}} |Select-Object -Property CreationDate, PID, PPID, Name, Path |Sort-Object -Property CreationDate -Descending |Format-Table
 ```
 ```powershell
-#Shows all processes that have a main window.
+#Displays the all processes that have a main window.
 Get-Process |Where-Object {$_.mainWindowTitle} |Select-Object -Property Id,ProcessName,MainWindowTitle
 ```
 ```powershell
-#Shows PID information. (Can also use -Name)
+#Displays the PID information. (Can also use -Name)
 Get-Process -Id [NUMBER] -FileVersionInfo -ErrorAction SilentlyContinue |Format-List
 #Kill process. (Can also use -Name)
 Stop-Process -Id 18252
 ```
 ### Services
 ```powershell
-#Shows services.
+#Displays the services.
 sc.exe query
 #Or via powershell. (Basic)
 Get-Service |Format-Table -Wrap
 ```
 ```powershell
-#Shows services with linked PID and path.
+#Displays the services with linked PID and path.
 Get-WmiObject -Class Win32_Service |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap
 ```
 ```powershell
-#Shows running services with linked PID and path.
+#Displays the running services with linked PID and path.
 Get-WmiObject -Class Win32_Service |Where-Object {$_.State -eq "Running"} |Select-Object -Property ProcessId, Name, StartMode, State, PathName |Sort-Object -Property State |Format-Table -Wrap
 ```
 ```powershell
@@ -431,57 +431,71 @@ Common paths to look at for malicious files:
 - C:\Users\Administrator\AppData\Local\Temp
 
 ```powershell
-#Shows content of folder.
+#Displays the content of folder.
 Get-ChildItem -Path [FOLDER\PATH] |Sort-Object -Property LastWriteTime -Descending |Format-Table LastWriteTime,CreationTime,Mode,Length,FullName
 ```
 ```powershell
-#Shows content of folder including file hashes.
+#Displays the content of folder including file hashes.
 (Get-ChildItem -Path [FOLDER\PATH]).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
 ```
 ```powershell
-#Checks folder for invalid files.
-Get-AuthenticodeSignature -FilePath [FOLDER\PATH\*] |Where-Object {$_.Status -ne "Valid"}
+#Checks folder for invalid files. Look at: 'C:\Windows' & 'C:\Windows\System32'
+Get-ChildItem [FOLDER\PATH]\*.* |ForEach-Object {Get-AuthenticodeSignature $_} |Where-Object {$_.Status -ne "Valid"}
 ```
 ```powershell
-#Checks folders for specific files.
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @([FILE1], [FILE2]) | Format-List FullName
+#Checks a drive for specific files.
+Get-ChildItem -Path [DRIVE] -Recurse -Force -ErrorAction SilentlyContinue -Include @([FILE1], [FILE2]) | Format-List FullName
 ```
 ```powershell
-#Checks folders for files types.
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include @("*.exe", "*.log") | Format-List FullName
+#Checks a drive for files types.
+Get-ChildItem -Path [DRIVE] -Recurse -Force -ErrorAction SilentlyContinue -Include @("*.exe", "*.log") | Format-List FullName
 ```
 ```powershell
+#Recently executed binaries on a drive.
+Get-ChildItem -Path [DRIVE] -Recurse -Force -ErrorAction SilentlyContinue -Include "*.exe" |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName
+```
+```powershell
+#Displays the files created around a certain time, e.g. malicious task running.
+Get-ChildItem [DRIVE] -Recurse -Force -ErrorAction SilentlyContinue | Where-Object {$_.CreationTime -gt "10/25/2018 11:29:00 AM" -and $_.CreationTime -lt "10/26/2018 11:40:00 AM"} |Sort-Object CreationTime, Name |Format-Table CreationTime, Name
+```
+```powershell
+#Displays the named pipes used for inter-process communication (IPC).
+Get-ChildItem \\.\pipe\ |ForEach-Object {[PSCustomObject]@{FullPath = "\\.\pipe\$($_.Name)"}}
+```
+```powershell
+#Commands for a specific file, i.e. suspicious or malicious.
+#Verified the digital signature of a file.
+Get-AuthenticodeSignature -FilePath [PATH\TO\FILE]
+#Displays the owner of a file.
+(Get-ItemProperty [PATH\TO\FILE]).GetAccessControl() |Format-Table -Wrap
+#Displays the human-readable content of a file.
+Get-Content [PATH\TO\FILE] | Out-String
+#Displays the hash of a file.
+Get-FileHash -Algorithm SHA256 [PATH\TO\FILE]
+#Compresses a file for assessing.
+Compress-Archive -Path [PATH\TO\FILE] -DestinationPath [PATH\NAME.ZIP]
+```
+```powershell
+#Displays USB running connections.
+Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName
+#Displays USB connections.
+Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap
+```
 
->>>>Here
-
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName #recent files used, also try 'LastAccessTime' or 'CreationTime'
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue -Include "*.exe" |Sort-Object -Property LastWriteTime -Descending |Select-Object -First 20 |Format-Table LastWriteTime,FullName #recent executables used
-Get-ChildItem \\.\pipe\ #shows named pipes
-Get-AuthenticodeSignature -FilePath C:\Users\Administrator\Downloads\bad.exe #malicious file tend to be unsigned
-Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Shows folder permissions.
-Get-ChildItem C:\Windows\*.* |ForEach-Object {Get-AuthenticodeSignature $_} |Where-Object {$_.Status -ne "Valid"} #malicious files tend to be unsigned
-    (Get-ItemProperty .\sethc.exe).GetAccessControl() |Format-Table -Wrap #Shows owner of the file.
-    Get-Content C:\Users\Administrator\AppData\Local\Temp\sethc.exe | Out-String
-    Get-FileHash -Algorithm SHA256 C:\Users\Administrator\AppData\Local\Temp\sethc.exe
-    Compress-Archive -Path C:\Users\Work\Downloads -DestinationPath C:\compressed.zip
-#looking at files created around the time of a task running
-Get-ChildItem "C:\" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object {$_.CreationTime -gt "10/25/2018 11:29:00 AM" -and $_.CreationTime -lt "10/26/2018 11:40:00 AM"} |Sort-Object CreationTime, Name |Format-Table CreationTime, Name
+### Shares
+net use # checks for shared resources like mapped drives
+Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Displays the folder permissions.
+Get-FileShare
+Get-SmbShare
 #looking/decrypting cpasswords. cpassword is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
 Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
     Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
     Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 
-Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap #USB connections
-Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName #USB running connections
-
-net use # checks for shared resources like mapped drives
-Get-FileShare
-Get-SmbShare
-
 #Recycle Bin files
 #Currently one run for the local user, need to determine how to choose users.
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Shows Origional path
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Shows modify date
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Displays the Origional path
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Displays the modify date
 Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
 Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
 Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
@@ -509,7 +523,7 @@ Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently ac
     Stop-ScheduledTask -TaskName "sekurlsa" #stops task
     Disable-ScheduledTask -TaskName "sekurlsa" #disables task 
     Unregister-ScheduledTask -TaskName "sekurlsa" #deletes task
-    Get-ScheduledTask -TaskName 'sekurlsa' |Select-Object * #Shows all fields.
+    Get-ScheduledTask -TaskName 'sekurlsa' |Select-Object * #Displays the all fields.
     (Get-ScheduledTask -TaskName 'sekurlsa').Actions
     Get-ScheduledTaskInfo sekurlsa
     schtasks.exe /query /tn sekurlsa /v /fo list
@@ -519,16 +533,16 @@ Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 
-Get-BitsTransfer -AllUsers -Name * #Shows BitsJob objects for all users
+Get-BitsTransfer -AllUsers -Name * #Displays the BitsJob objects for all users
 Get-BitsTransfer -AllUsers -Name "TestJob1"
     #Suspending or Removing
     $remove = Get-BitsTransfer -AllUsers -Name "TestJob1"
     Remove-BitsTransfer -BitsJob $remove
 
-#Detect with SysmonID:19. Shows trigger for execution.
+#Detect with SysmonID:19. Displays the trigger for execution.
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter
     Get-WMIObject -Namespace root\Subscription -Class __EventFilter -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
-#Detect with SysmonID:20. Shows actions, e.g. Base64 encoded string, executing files.
+#Detect with SysmonID:20. Displays the actions, e.g. Base64 encoded string, executing files.
 Get-WMIObject -Namespace root\Subscription -Class __EventConsumer
     Get-WMIObject -Namespace root\Subscription -Class CommandLineEventConsumer -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
 #Detect with SysmonID:21. Binds Filter and Consumer Classes.
@@ -563,9 +577,9 @@ Get-WinEvent -Path example.evtx |Where-Object{$_.Message -like "*fail*"} |Format
 ## **Active Directory**
 ### Domain
 ```powershell
-Get-ADDomain #Shows information on the domain, inc DNS name.
-(Get-ADDomain).domainmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
-(Get-ADForest).forestmode #Shows functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
+Get-ADDomain #Displays the information on the domain, inc DNS name.
+(Get-ADDomain).domainmode #Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
+(Get-ADForest).forestmode #Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
 (Get-ADComputer -Filter *).name # lists all the hostnames.
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'} |Select-Object SamAccountName).count #Total accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled. 
 Resolve-DnsName DC1.dwc.gov.au # Lists the IP address of the DNS name.
@@ -583,7 +597,7 @@ Get-ADUser -Filter * #for all domain accounts
 Get-ADUser -Filter 'Name -like "*Leigh"' # Looks for specific names.
 Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for username accounts starting with A.
     (Get-ADUser -Identity "Heady" -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name #Listing what groups a domain user is a part of.
-    Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # shows all properties related to the ADUser
+    Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # Displays the all properties related to the ADUser
     Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
     Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
     Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
