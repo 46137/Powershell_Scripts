@@ -518,15 +518,18 @@ Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyConti
 ```
 ### Shares
 ```powershell
-#Displays shared resources.
+#Displays shared resources, e.g. mapped network drives
 net.exe use
-Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Displays the folder permissions.
-Get-FileShare
-Get-SmbShare
-#looking/decrypting cpasswords. cpassword is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
-Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
-    Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
-    Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
+#Displays the share folder permissions.
+Get-Acl -Path \\[SHARE]\ADMIN$\ |Format-List
+```
+```powershell
+#Displays pattern matched results in domain policy files.
+#E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
+Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
+#Decrypt cpasswords with the following Powersploit module.
+Import-Module Get-DecryptedCpassword
+Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 ```
 
 ## **Persistence Methods**
@@ -544,66 +547,85 @@ Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property La
 Get-ScheduledTask |Where-Object {$_.state -eq "Running"}
 ```
 ```powershell
-#Displays specific task fields.
-Get-ScheduledTask -TaskName SystemSoundsService |Select-Object *
-    Stop-ScheduledTask -TaskName "sekurlsa" #stops task
-    Disable-ScheduledTask -TaskName "sekurlsa" #disables task 
-    Unregister-ScheduledTask -TaskName "sekurlsa" #deletes task
-    
-    (Get-ScheduledTask -TaskName SystemSoundsService).Actions
-    Get-ScheduledTaskInfo SystemSoundsService
-    schtasks.exe /query /tn sekurlsa /v /fo list
+Get-ScheduledTask -TaskName [NAME] |Select-Object * #Task information.
+Get-ScheduledTaskInfo [NAME]
+Stop-ScheduledTask -TaskName [NAME] #Stops task.
+Disable-ScheduledTask -TaskName [NAME] #Dsables task. 
+Unregister-ScheduledTask -TaskName [NAME] #Deletes task.
+(Get-ScheduledTask -TaskName [NAME]).Actions
 ```
 ### Run Keys
 ```powershell
 Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-    Get-ItemProperty -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+Get-ItemProperty -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-    Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 ```
 ### BitsTransfer
 ```powershell
-Get-BitsTransfer -AllUsers -Name * #Displays the BitsJob objects for all users
-Get-BitsTransfer -AllUsers -Name "TestJob1"
-    #Suspending or Removing
-    $remove = Get-BitsTransfer -AllUsers -Name "TestJob1"
-    Remove-BitsTransfer -BitsJob $remove
+#Displays the BitsJob objects for all users.
+Get-BitsTransfer -AllUsers -Name *
+#Displays specific job.
+Get-BitsTransfer -AllUsers -Name [NAME]
 ```
+```powershell
+#Suspending or Removing BitsJob.
+$remove = Get-BitsTransfer -AllUsers -Name [NAME]
+Remove-BitsTransfer -BitsJob $remove
+```
+### WMI Event Subscriptions
 ```powershell
 #Detect with SysmonID:19. Displays the trigger for execution.
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter
-    Get-WMIObject -Namespace root\Subscription -Class __EventFilter -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
+#Removing.
+Get-WMIObject -Namespace root\Subscription -Class __EventFilter -Filter “Name=[NAME]” | Remove-WmiObject -Verbose
+```
+```powershell
 #Detect with SysmonID:20. Displays the actions, e.g. Base64 encoded string, executing files.
 Get-WMIObject -Namespace root\Subscription -Class __EventConsumer
-    Get-WMIObject -Namespace root\Subscription -Class CommandLineEventConsumer -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
+#Removing.
+Get-WMIObject -Namespace root\Subscription -Class CommandLineEventConsumer -Filter “Name=[NAME]” | Remove-WmiObject -Verbose
+```
+```powershell
 #Detect with SysmonID:21. Binds Filter and Consumer Classes.
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding
-    Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding -Filter “__Path LIKE ‘%Updater%’” | Remove-WmiObject -Verbose #Removing
+#Removing.
+Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding -Filter “__Path LIKE ‘%[NAME]%’” | Remove-WmiObject -Verbose
 ```
 ### Printnightmare
 ```powershell
-#PRINTNIGHTMARE PRIV-ESC AND REMOVAL
-Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
-Get-smbopenfile #further info  
-(Get-ChildItem -Path 'C:\Windows\system32\spool\DRIVERS\x64\3\' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Hashes all the driver files
-    #Get-Service spooler |Stop-Service (Optional)
-    #Stop-Process -id 1685 (Optional). For 'spoolsv', if not reset machine. 
-    remove-printerdriver -name HP2057 #removes the driver
-    get-smbopenfile |where-object {$_.path -like "*NIGHTMARE.DLL" } |close-smbopenfile #closes smb connections linked to the dll drivers so we can delete the file
-    remove-item -Path C:\Windows\system32\spool\DRIVERS\x64\3\nightmare.dll -Force #removes the bad DLL
+#Displays persistence related to printnightmare.
+Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap
+#Further information.
+Get-smbopenfile
+#Validating through hashing the driver files.
+(Get-ChildItem -Path 'C:\Windows\system32\spool\DRIVERS\x64\3\' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
+```
+```powershell
+#Remediate through:
+#Stopping service. (Optional)
+Get-Service spooler |Stop-Service
+#Stopping spoolsv process. (Optional, can also reset machine)
+Stop-Process -id [PID]
+#Deleting the driver.
+Remove-PrinterDriver -Name [NAME]
+#Closing SMB connections linked to the DLL drivers so the file can be deleted.
+Get-SmbOpenFile |Where-Object {$_.path -Like "*[NAME].DLL" } |Close-SmbOpenFile
+#Delete the malicious DLL.
+Remove-Item -Path C:\Windows\system32\spool\DRIVERS\x64\3\[NAME].dll -Force
 ```
 
 ## **Events**
 ```powershell
 Get-EventLog -list
 Get-EventLog -LogName Application |Format-Table -Wrap
-Get-EventLog -LogName Security -InstanceId 4624 -Newest 20 |Select-Object -Property Index, EntryType, TimeGenerated, Message |Format-List #successful logon
-Get-EventLog -LogName Security -InstanceId 4672 -Newest 20 |Select-Object -Property Index, EntryType, TimeGenerated, Message |Format-List #admin logon
-Get-EventLog -LogName Security -InstanceId 4720 -Newest 20 |Format-List #account created
-Get-EventLog -LogName Security -InstanceId 4778,4779 -Newest 20 |Format-List #RDP history
+Get-EventLog -LogName Security -InstanceId [EVENTID] -Newest 20 |Format-List
 Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational"
-Get-WinEvent -Path example.evtx |Out-GridView #Static analysis in GUI.
-Get-WinEvent -Path example.evtx |Where-Object{$_.Message -like "*fail*"} |Format-Table -Wrap
+```
+```powershell
+#Analysis of log file.
+Get-WinEvent -Path [LOGS].evtx |Out-GridView
+Get-WinEvent -Path [LOGS].evtx |Where-Object{$_.Message -like "*fail*"} |Format-Table -Wrap
 ```
 
 ## **Active Directory**
