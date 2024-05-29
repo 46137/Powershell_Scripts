@@ -462,6 +462,27 @@ Get-ChildItem [DRIVE] -Recurse -Force -ErrorAction SilentlyContinue | Where-Obje
 #Displays the named pipes used for inter-process communication (IPC).
 Get-ChildItem \\.\pipe\ |ForEach-Object {[PSCustomObject]@{FullPath = "\\.\pipe\$($_.Name)"}}
 ```
+Displays recently accessed Windows files by looking at link files. Common paths:
+- C:\Users\[USER]\AppData\Roaming\Microsoft\Windows\Recent
+- C:\Users\[USER]\AppData\Roaming\Microsoft\Office\Recent
+```powershell
+#List all link files in the specified directory.
+$lnkfiles = Get-ChildItem -Path [PATH\TO\LNK]]
+#Process each link file to retrieve its properties and target path.
+$lnkfiles | ForEach-Object {
+    #Create a WScript.Shell COM object
+    $shell = New-Object -ComObject WScript.Shell
+    #Get the shortcut's target path
+    $lnkfile = $shell.CreateShortcut($_.FullName)
+    #Create a custom object with the required properties
+    [PSCustomObject]@{
+        CreationTime = $_.CreationTime
+        FileName = $_.Name
+        TargetPath = $lnkfile.TargetPath
+    }
+} |Sort-Object -Property CreationTime -Descending
+```
+
 ```powershell
 #Commands for a specific file, i.e. suspicious or malicious.
 #Verified the digital signature of a file.
@@ -481,7 +502,16 @@ Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-O
 #Displays USB connections.
 Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap
 ```
-
+```powershell
+#Recycle Bin files
+#Currently one run for the local user, need to determine how to choose users.
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Displays the Origional path
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Displays the modify date
+Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
+Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
+Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
+(Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
+```
 ### Shares
 net use # checks for shared resources like mapped drives
 Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Displays the folder permissions.
@@ -492,28 +522,6 @@ Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -E
     Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
     Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 
-#Recycle Bin files
-#Currently one run for the local user, need to determine how to choose users.
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Displays the Origional path
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Displays the modify date
-Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
-Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
-Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
-(Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
-
-# Recently accessed Windows files.
-# The times for a link file differ to the actual file times. The creation time of a .lnk file is for when it is first used. If the modification time is different to the creation time then the file has been used more than once.
-# No point using the $env:APPDATA as it will default to account creds you're using so you won't see the recent files of the target user. Fill in the target username as required.
-Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Windows\Recent |Select-Object -Property CreationTime,LastAccessTime,LastWriteTime,Length,Name |Sort-Object -Property LastAccessTime -Descending |Format-Table -Wrap
-# Below uses the above .lnk fullname information ($linkfiles) and creates a new object to find the .lnk files targetpath.
-Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Windows\Recent |ForEach-Object {(New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).TargetPath}
-
-# Recently accessed Office files.
-Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recent |Select-Object -Property CreationTime,LastAccessTime,LastWriteTime,Length,Name |Sort-Object -Property LastWriteTime -Descending |Format-Table -Wrap
-# Below uses the above .lnk fullname information ($linkfiles) and creates a new object to find the .lnk files targetpath.
-Get-ChildItem -path C:\Users\"TargetUser"\AppData\Roaming\Microsoft\Office\Recent |ForEach-Object {(New-Object -ComObject WScript.Shell).CreateShortcut($_.FullName).TargetPath}
-
-```
 
 ## **Persistence Methods**
 ```powershell
