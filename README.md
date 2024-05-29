@@ -503,17 +503,23 @@ Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-O
 Get-PnpDevice |Where-Object {$_.Class -eq 'USB'} |Format-Table -Wrap
 ```
 ```powershell
-#Recycle Bin files
-#Currently one run for the local user, need to determine how to choose users.
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name #Displays the Origional path
-(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending #Displays the modify date
-Get-childItem  'C:\$Recycle.Bin' -Force -ErrorAction SilentlyContinue #lists user SIDs recyclebin folders
-Get-ChildItem  'C:\$Recycle.Bin\S-1-5-21-2597032353-3689133737-3729642783-1006' -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime -Descending #lists files but not the names, just types.
+#Displays recycle bin files of the current user's SID.
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() | Select-Object ModifyDate, Name, Size, Path |Sort-Object -Property modifydate -Descending
+#Or
 Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue |Sort-Object -Property lastwritetime
-(Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_} #Gets SHA1 of all files in the bin.
+```
+```powershell
+#Displays recycle bin files of the current user's SID and includes the origional path.
+(New-Object -ComObject Shell.Application).NameSpace(0x0a).Items() |Select-Object @{n="OriginalLocation";e={$_.ExtendedProperty("{9B174B33-40FF-11D2-A27E-00C04FC30871} 2")}},Name
+```
+```powershell
+#Gets hashes of recycle bin files of the current user's SID.
+(Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
 ```
 ### Shares
-net use # checks for shared resources like mapped drives
+```powershell
+#Displays shared resources.
+net.exe use
 Get-Acl -Path \\fs1\ADMIN$\ |Format-List #Displays the folder permissions.
 Get-FileShare
 Get-SmbShare
@@ -521,9 +527,10 @@ Get-SmbShare
 Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
     Import-Module Get-DecryptedCpassword #Function from Powersploit to decrypt.
     Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
-
+```
 
 ## **Persistence Methods**
+### Scheduled Tasks
 ```powershell
 Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
 Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
@@ -535,18 +542,23 @@ Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently ac
     (Get-ScheduledTask -TaskName 'sekurlsa').Actions
     Get-ScheduledTaskInfo sekurlsa
     schtasks.exe /query /tn sekurlsa /v /fo list
-
+```
+### Run Keys
+```powershell
 Get-Item -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
 Get-Item -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
     Get-ItemProperty -path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
-
+```
+### BitsTransfer
+```powershell
 Get-BitsTransfer -AllUsers -Name * #Displays the BitsJob objects for all users
 Get-BitsTransfer -AllUsers -Name "TestJob1"
     #Suspending or Removing
     $remove = Get-BitsTransfer -AllUsers -Name "TestJob1"
     Remove-BitsTransfer -BitsJob $remove
-
+```
+```powershell
 #Detect with SysmonID:19. Displays the trigger for execution.
 Get-WMIObject -Namespace root\Subscription -Class __EventFilter
     Get-WMIObject -Namespace root\Subscription -Class __EventFilter -Filter “Name=’Updater’” | Remove-WmiObject -Verbose #Removing
@@ -556,7 +568,9 @@ Get-WMIObject -Namespace root\Subscription -Class __EventConsumer
 #Detect with SysmonID:21. Binds Filter and Consumer Classes.
 Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding
     Get-WMIObject -Namespace root\Subscription -Class __FilterToConsumerBinding -Filter “__Path LIKE ‘%Updater%’” | Remove-WmiObject -Verbose #Removing
-
+```
+### Printnightmare
+```powershell
 #PRINTNIGHTMARE PRIV-ESC AND REMOVAL
 Get-PrinterDriver |Select-Object -Property Name, PrinterEnvironment, Manufacturer, DataFile, ConfigFile |Format-Table -Wrap #To find persistence related to printnightmare
 Get-smbopenfile #further info  
@@ -566,7 +580,6 @@ Get-smbopenfile #further info
     remove-printerdriver -name HP2057 #removes the driver
     get-smbopenfile |where-object {$_.path -like "*NIGHTMARE.DLL" } |close-smbopenfile #closes smb connections linked to the dll drivers so we can delete the file
     remove-item -Path C:\Windows\system32\spool\DRIVERS\x64\3\nightmare.dll -Force #removes the bad DLL
-
 ```
 
 ## **Events**
