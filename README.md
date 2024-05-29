@@ -532,15 +532,26 @@ Get-ChildItem -Recurse -Path \\dwc\SYSVOL\dwc.gov.au\Policies\ -Include *.xml -E
 ## **Persistence Methods**
 ### Scheduled Tasks
 ```powershell
-Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap #recently created tasks
-Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap #recently run tasks
-Get-ScheduledTask |Where-Object {$_.state -eq "Running"} #looks for currently active tasks, keep in mind ready tasks also
+#Displays recently created tasks.
+Get-ScheduledTask |Select-Object -Property Date,State,TaskName,TaskPath |Sort-Object -Property Date -Descending | Select-Object -First 20 |Format-Table -Wrap
+```
+```powershell
+#Displays recently run tasks.
+Get-ScheduledTask -TaskName * |Get-ScheduledTaskInfo |Select-Object -Property LastRunTime, TaskName, TaskPath |Sort-Object -Property LastRunTime -Descending |Format-Table -Wrap
+```
+```powershell
+#Displays running tasks.
+Get-ScheduledTask |Where-Object {$_.state -eq "Running"}
+```
+```powershell
+#Displays specific task fields.
+Get-ScheduledTask -TaskName SystemSoundsService |Select-Object *
     Stop-ScheduledTask -TaskName "sekurlsa" #stops task
     Disable-ScheduledTask -TaskName "sekurlsa" #disables task 
     Unregister-ScheduledTask -TaskName "sekurlsa" #deletes task
-    Get-ScheduledTask -TaskName 'sekurlsa' |Select-Object * #Displays the all fields.
-    (Get-ScheduledTask -TaskName 'sekurlsa').Actions
-    Get-ScheduledTaskInfo sekurlsa
+    
+    (Get-ScheduledTask -TaskName SystemSoundsService).Actions
+    Get-ScheduledTaskInfo SystemSoundsService
     schtasks.exe /query /tn sekurlsa /v /fo list
 ```
 ### Run Keys
