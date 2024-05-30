@@ -293,7 +293,7 @@ Get-CimInstance -class Win32_UserProfile |Where-Object {$_.SID -eq [SID]} | Remo
 ### Groups
 ```powershell
 #Displays the local group details. (Basic)
-net localgroup [GROUPNAME]
+net.exe localgroup [GROUPNAME]
 #Or via powershell.
 Get-LocalGroupMember -Group [GROUPNAME] |Select-Object -Property ObjectClass, Name, PrincipalSource, SID
 ```
@@ -641,9 +641,13 @@ Get-DnsServerResourceRecord -ZoneName [DNS.FQDN] -rrtype "A"
 
 ### AD Users
 ```powershell
-#Displays domain account names.
+#Displays domain user names.
 (Get-ADUser -Filter *).SamAccountName
-#Recently created domain accounts.
+#Total enabled domain users.
+(Get-ADUser -Filter {enabled -eq $true}).count
+#Total disabled domain users.
+(Get-ADUser -Filter {enabled -ne $true}).count
+#Recently created domain users.
 Get-ADUser -Filter * -Properties WhenCreated | Sort-Object WhenCreated -Descending |Select-Object -Property SamAccountName, WhenCreated -First 20
 ```
 ```powershell
@@ -675,8 +679,8 @@ Get-ADUser -Filter {ServicePrincipalName -like '*'} -Properties PasswordLastSet,
 Get-ADUser -Identity 'krbtgt' -Properties PasswordLastSet, ServicePrincipalName | Select-Object Name, PasswordLastSet, ServicePrincipalName
 ```
 ```powershell
-#Displays domain objects with SPNs.
-Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName | Select-Object Name, servicePrincipalName
+#Displays SQL domain objects with SPNs.
+Get-ADObject -Filter {servicePrincipalName -like '*sql*'} -Properties servicePrincipalName | Select-Object Name, servicePrincipalName
 ```
 User Descriptions
 ```powershell
