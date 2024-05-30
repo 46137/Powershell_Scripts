@@ -16,13 +16,15 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Local Users & Groups](#local-users--groups)
 - [IP & Network Connections](#ip--network-connections)
 - [Processes & Services](#processes--services)
-- [Files & Shares](#files--shares)
+- [Files](#files)
 - [Persistence Methods](#Persistence-methods)
 - [Events](#events)
 - [Active Directory](#active-directory)
   - [Domain](#domain)
   - [AD Users](#ad-users)
+  - [AD Vulnerabilities](#ad-vulnerabilities)
   - [AD Groups](#ad-groups)
+  - [Shares](#shares)
   - [AD Sinkhole](#ad-sinkhole)
 - [Tasks](#readmemd-tasks)
 
@@ -328,6 +330,10 @@ Get-Content C:\Windows\System32\drivers\etc\hosts
 ipconfig.exe /displaydns
 #Or via powershell.
 Get-DnsClientCache |Format-Table -Wrap
+#Displays the IP address of the DNS name.
+Resolve-DnsName [FQDN]
+#Reverse DNS lookup.
+Resolve-DnsName [IP ADDRESS]
 ```
 ```powershell
 #Clear DNS cache.
@@ -423,8 +429,7 @@ sc.exe delete [NAME]
 Get-Content C:\Windows\System32\drivers\etc\services
 ```
 
-## **Files & Shares**
-### Files
+## **Files**
 Common paths to look at for malicious files:
 - C:\Windows\Temp
 - C:\Users\Administrator\Downloads
@@ -482,7 +487,6 @@ $lnkfiles | ForEach-Object {
     }
 } |Sort-Object -Property CreationTime -Descending
 ```
-
 ```powershell
 #Commands for a specific file, i.e. suspicious or malicious.
 #Verified the digital signature of a file.
@@ -516,22 +520,6 @@ Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyConti
 #Gets hashes of recycle bin files of the current user's SID.
 (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
 ```
-### Shares
-```powershell
-#Displays shared resources, e.g. mapped network drives
-net.exe use
-#Displays the share folder permissions.
-Get-Acl -Path \\[SHARE]\ADMIN$\ |Format-List
-```
-```powershell
-#Displays pattern matched results in domain policy files.
-#E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
-Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
-#Decrypt cpasswords with the following Powersploit module.
-Import-Module Get-DecryptedCpassword
-Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
-```
-
 ## **Persistence Methods**
 ### Scheduled Tasks
 ```powershell
@@ -631,43 +619,86 @@ Get-WinEvent -Path [LOGS].evtx |Where-Object{$_.Message -like "*fail*"} |Format-
 ## **Active Directory**
 ### Domain
 ```powershell
-Get-ADDomain #Displays the information on the domain, inc DNS name.
-(Get-ADDomain).domainmode #Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
-(Get-ADForest).forestmode #Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
-(Get-ADComputer -Filter *).name # lists all the hostnames.
-(Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'} |Select-Object SamAccountName).count #Total accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled. 
-Resolve-DnsName DC1.dwc.gov.au # Lists the IP address of the DNS name.
-Resolve-DnsName 10.10.10.10 # Reverse DNS lookup.
-(get-adcomputer -filter *).name |foreach {Resolve-DnsName $_} # lists the dns(hostname) & associated IPs.
-get-dnsserverresourcerecord -zonename "int-vpa.com" -rrtype "A" # lists the hostnames & associated IPs.
-(Get-ADUser -Filter *).name # list names of all domain accounts.
-Get-ADUser -Filter * -Properties * |Select-Object -Property Name, WhenCreated | Sort-Object WhenCreated
-Get-ADComputer -filter 'OperatingSystem -like "*"' -properties Name, OperatingSystem, OperatingSystemVersion, IPv4Address |select-object -property Name, OperatingSystem, OperatingSystemVersion, IPv4Address
+#Displays the information on the domain.
+Get-ADDomain
+#Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can be used by the DC.
+(Get-ADDomain).domainmode
+#Displays the functional level (e.g. Windows2012R2). This defines the features of AD DS that can are available in the forest.
+(Get-ADForest).forestmode
+```
+```powershell
+#Displays domain hostnames, OS, OS versions and IPs.
+Get-ADComputer -Filter {OperatingSystem -like "*"} -Properties Name, OperatingSystem, OperatingSystemVersion, IPv4Address |Select-Object -Property Name, OperatingSystem, OperatingSystemVersion, IPv4Address
+#Displays domain hostnames & associated IP addresses via DNS lookup. (More accurate)
+(Get-ADComputer -Filter *).name |Foreach-Object {Resolve-DnsName $_}
+#Or
+Get-DnsServerResourceRecord -ZoneName [DNS.FQDN] -rrtype "A"
 ```
 
 ### AD Users
 ```powershell
-Get-ADUser -Filter * #for all domain accounts
-Get-ADUser -Filter 'Name -like "*Leigh"' # Looks for specific names.
-Get-ADUser -Filter 'SamAccountName -like "A*"' #Looks for username accounts starting with A.
-    (Get-ADUser -Identity "Heady" -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name #Listing what groups a domain user is a part of.
-    Get-ADObject -Filter * -SearchBase 'CN=heady,CN=Users,DC=546,DC=cmt' -Properties * # Displays the all properties related to the ADUser
-    Get-ADPrincipalGroupMembership heady |Select-Object Name # Lists groups of the member
-    Enable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' #best to use the 'distinguishedname' field rather than 'name'.
-    Disable-ADAccount -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # disables account
-    Remove-ADUser -identity 'CN=heady,CN=Users,DC=546,DC=cmt' # removes account
-Get-ADUser -Identity 'krbtgt' -Properties 'passwordlastset' # Lists last time password was changed.
-Get-ADUser -Filter {PasswordNotRequired -eq $true} # Users configured not to require a password.
-Get-ADUser -Filter * -Properties PasswordNeverExpires | Where-Object {$_.PasswordNeverExpires -eq $true} #Check users for password never expiring.
-Get-ADUser -filter {Description -notlike "*CTF Player*" -and Description -notlike "*IT Admin of DWC*"} -properties Description |Select-Object samaccountname,description #checking domain accounts for passwords in descriptions.
-Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequirePreAuth #AS-Response roasting is obtaining the AS-REP and attempting to crack the hash offline. Pre-authentication requires users to prove their identity before receiving a TGT.
-Get-ADUser -Filter {UserPassword -like "*"} -Properties UserPassword |Select-Object SamAccountName,UserPassword #To find plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
-Get-LapsADPassword -Identity ctf2.dwc.gov.au -AsPlainText #Get LAPS
-Get-ADUser -Filter {ServicePrincipalName -like '*'} -Properties PasswordLastSet, ServicePrincipalName |Sort-Object PasswordLastSet | Select-Object Name, PasswordLastSet, ServicePrincipalName #User accounts with SPNs and list password last set.
-Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName |Where-Object {$_.name -notlike "Win10Client*"} | Select-Object Name, servicePrincipalName #Objects with SPNs.
-
+#Displays domain account names.
+(Get-ADUser -Filter *).SamAccountName
+#Recently created domain accounts.
+Get-ADUser -Filter * -Properties WhenCreated | Sort-Object WhenCreated -Descending |Select-Object -Property SamAccountName, WhenCreated -First 20
+```
+```powershell
+#Looking for specific names.
+Get-ADUser -Filter {Name -like "*[NAME]*"}
+#Or
+Get-ADUser -Filter {SamAccountName -like "A*"}
+```
+```powershell
+#Specific user queries.
+#Displays all properties of a domain user.
+Get-ADObject -Filter * -SearchBase '[DISTINGUISHED NAME]' -Properties *
+#Displays the groups of a domain user.
+(Get-ADUser -Identity [SAMACCOUNTNAME] -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name
+#Displays the groups of a domain user. (Slow)
+Get-ADPrincipalGroupMembership lhead_ctf |Select-Object Name
+#Enable, disable & remove.
+Enable-ADAccount -identity '[DISTINGUISHED NAME]'
+Disable-ADAccount -identity '[DISTINGUISHED NAME]'
+Remove-ADUser -identity '[DISTINGUISHED NAME]'
 ```
 
+### AD Vulnerabilities
+```powershell
+#Displays domain user accounts with a SPN & password last set.
+Get-ADUser -Filter {ServicePrincipalName -like '*'} -Properties PasswordLastSet, ServicePrincipalName |Sort-Object PasswordLastSet | Select-Object Name, PasswordLastSet, ServicePrincipalName
+#Displays when the KerberosTGT account's password was last set.
+Get-ADUser -Identity 'krbtgt' -Properties PasswordLastSet, ServicePrincipalName | Select-Object Name, PasswordLastSet, ServicePrincipalName
+```
+```powershell
+#Displays domain objects with SPNs.
+Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName | Select-Object Name, servicePrincipalName
+```
+```powershell
+#Displays domain user's descriptions. Looking for passwords.
+Get-ADUser -Filter {Description -notlike "*[STANDARD WORDING]*" -and Description -notlike "*[STANDARD WORDING]*"} -properties Description |Select-Object samaccountname,description
+```
+```powershell
+#Looking for AS-Response roastable domain users, which involves obtaining the AS-REP and attempting to crack the hash offline. Pre-authentication requires users to prove their identity before receiving a TGT.
+Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequirePreAuth
+```
+```powershell
+#Displays plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
+Get-ADUser -Filter {UserPassword -like "*"} -Properties UserPassword |Select-Object SamAccountName,UserPassword
+```
+```powershell
+#Displays domain users who DON'T require a password.
+(Get-ADUser -Filter {PasswordNotRequired -eq $true}).SamAccountName
+#Displays domain users whose password never expires. (May be weak)
+(Get-ADUser -Filter {PasswordNeverExpires -eq $true}).SamAccountName
+```
+```powershell
+#Displays accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled.
+(Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'}).SamAccountName
+#Displays accounts with LAPS disabled.
+(Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -notlike '*'}).SamAccountName
+#Displaying the LAPS password of a specific account. (Need account with read LAPS permissions)
+Get-LapsADPassword -Identity [FQDN] -AsPlainText
+```
 ### AD Groups
 ```powershell
 Get-AdGroup -Filter * # lists all AD groups
@@ -675,6 +706,21 @@ Get-ADGroupMember -Identity 'Administrators'
 (Get-ADGroupMember -Identity 'Domain Admins').name #Lists all domain admins.
 Get-GPO
 Get-ADDefaultDomainPasswordPolicy #Compare to ISM.
+```
+### Shares
+```powershell
+#Displays shared resources, e.g. mapped network drives
+net.exe use
+#Displays the share folder permissions.
+Get-Acl -Path \\[SHARE]\ADMIN$\ |Format-List
+```
+```powershell
+#Displays pattern matched results in domain policy files.
+#E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
+Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
+#Decrypt cpasswords with the following Powersploit module.
+Import-Module Get-DecryptedCpassword
+Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 ```
 
 ### AD Sinkhole
