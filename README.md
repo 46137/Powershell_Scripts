@@ -667,6 +667,7 @@ Remove-ADUser -identity '[DISTINGUISHED NAME]'
 ```
 
 ### AD Vulnerabilities
+Service Principal Names
 ```powershell
 #Displays domain user accounts with a SPN & password last set.
 Get-ADUser -Filter {ServicePrincipalName -like '*'} -Properties PasswordLastSet, ServicePrincipalName |Sort-Object PasswordLastSet | Select-Object Name, PasswordLastSet, ServicePrincipalName
@@ -677,24 +678,38 @@ Get-ADUser -Identity 'krbtgt' -Properties PasswordLastSet, ServicePrincipalName 
 #Displays domain objects with SPNs.
 Get-ADObject -Filter {servicePrincipalName -like '*'} -Properties servicePrincipalName | Select-Object Name, servicePrincipalName
 ```
+User Descriptions
 ```powershell
 #Displays domain user's descriptions. Looking for passwords.
 Get-ADUser -Filter {Description -notlike "*[STANDARD WORDING]*" -and Description -notlike "*[STANDARD WORDING]*"} -properties Description |Select-Object samaccountname,description
 ```
+AS-REP Roasting
 ```powershell
 #Looking for AS-Response roastable domain users, which involves obtaining the AS-REP and attempting to crack the hash offline. Pre-authentication requires users to prove their identity before receiving a TGT.
 Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequirePreAuth
 ```
+userPasswords
 ```powershell
 #Displays plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
 Get-ADUser -Filter {UserPassword -like "*"} -Properties UserPassword |Select-Object SamAccountName,UserPassword
 ```
+cPasswords
+```powershell
+#Displays pattern matched results in domain policy files.
+#E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
+Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
+#Decrypt cpasswords with the following Powersploit module.
+Import-Module Get-DecryptedCpassword
+Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
+```
+Passwords
 ```powershell
 #Displays domain users who DON'T require a password.
 (Get-ADUser -Filter {PasswordNotRequired -eq $true}).SamAccountName
 #Displays domain users whose password never expires. (May be weak)
 (Get-ADUser -Filter {PasswordNeverExpires -eq $true}).SamAccountName
 ```
+LAPS
 ```powershell
 #Displays accounts with local admin password solution (LAPS) enabled. If there is a value in ms-MCS-AdmPwd attribute, it is enabled.
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'}).SamAccountName
@@ -721,14 +736,6 @@ Get-AdGroup -Filter {SamAccountName -like "*admin*"}
 net.exe use
 #Displays the share folder permissions.
 Get-Acl -Path \\[SHARE]\ADMIN$\ |Format-List
-```
-```powershell
-#Displays pattern matched results in domain policy files.
-#E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
-Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
-#Decrypt cpasswords with the following Powersploit module.
-Import-Module Get-DecryptedCpassword
-Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0BaZ/7rdQjugTonF3ZWAKa1iRvd4JGQ'
 ```
 
 ### AD Sinkhole
