@@ -627,6 +627,10 @@ Get-ADDomain
 (Get-ADForest).forestmode
 ```
 ```powershell
+#Displays default domain password policy. (Compare to ISM)
+Get-ADDefaultDomainPasswordPolicy
+```
+```powershell
 #Displays domain hostnames, OS, OS versions and IPs.
 Get-ADComputer -Filter {OperatingSystem -like "*"} -Properties Name, OperatingSystem, OperatingSystemVersion, IPv4Address |Select-Object -Property Name, OperatingSystem, OperatingSystemVersion, IPv4Address
 #Displays domain hostnames & associated IP addresses via DNS lookup. (More accurate)
@@ -701,12 +705,16 @@ Get-LapsADPassword -Identity [FQDN] -AsPlainText
 ```
 ### AD Groups
 ```powershell
-Get-AdGroup -Filter * # lists all AD groups
-Get-ADGroupMember -Identity 'Administrators'
-(Get-ADGroupMember -Identity 'Domain Admins').name #Lists all domain admins.
-Get-GPO
-Get-ADDefaultDomainPasswordPolicy #Compare to ISM.
+#Displays all AD groups.
+Get-AdGroup -Filter *
+#Displays selected groups.
+Get-AdGroup -Filter {SamAccountName -like "*admin*"}
 ```
+```powershell
+#Displays members of a AD group, e.g. Domain Admins.
+(Get-ADGroupMember -Identity '[GROUP]').SamAccountName
+```
+
 ### Shares
 ```powershell
 #Displays shared resources, e.g. mapped network drives
@@ -725,10 +733,14 @@ Get-DecryptedCpassword 'RI133B2Wl2CiI0Cau1DtrtTe3wdFwzCiWB5PSAxXMDstchJt3bL0Uie0
 
 ### AD Sinkhole
 ```powershell
-add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.uan.ao,mincrosoft.com" #adding dns blocks
-set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "EQ,*.uan.ao,mincrosoft.com,smallcatmeow.com"  #modifying dns blocks
+#Adding DNS block, from AD.
+add-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "[FQDN]"
+#Modifying the DNS block.
+set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN "[FQDN],[NEW FQDN]"
+#Check block.
 get-dnsserverqueryresolutionpolicy
-Clear-DnsClientCache # Clear local cache on all/effected hosts.
+#Clear local cache on all/effected hosts.
+Clear-DnsClientCache
 ```
 
 ## **Readme.md Tasks**
