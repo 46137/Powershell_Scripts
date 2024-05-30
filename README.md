@@ -722,7 +722,7 @@ LAPS
 #Displaying the LAPS password of a specific account. (Need account with read LAPS permissions)
 Get-LapsADPassword -Identity [FQDN] -AsPlainText
 ```
-DC Sync Objects
+DC Sync Objects\
 Checking users for the following permission to conduct a DCSync:
 - DS-Replication-Get-Changes (Rights-GUID 1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)
 - DS-Replication-Get-Changes-All (Rights-GUID 1131f6ad-9c07-11d1-f79f-00c04fc2dcd2)
