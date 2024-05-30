@@ -273,7 +273,8 @@ Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Ids
 #Displays ASR state
 Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Actions
 ```
-Powershell Logging (Script Block & Module)
+Powershell Logging (Script Block & Module)\
+Also check if events are being generated.
 ```powershell
 #Check if script block logging is enabled in x64.
 (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging' -Name EnableScriptBlockLogging -ErrorAction SilentlyContinue).EnableScriptBlockLogging
@@ -285,8 +286,9 @@ Powershell Logging (Script Block & Module)
 (Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\PowerShell\ModuleLogging' -Name ModuleNames -ErrorAction SilentlyContinue).ModuleNames
 ```
 ```powershell
+#Creating script block logging item.
 New-Item -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Force
-
+#Setting a script block logging key.
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1 -Force
 ```
 
@@ -639,6 +641,26 @@ Get-WinEvent -LogName "Microsoft-Windows-Sysmon/Operational"
 Get-WinEvent -Path [LOGS].evtx |Out-GridView
 Get-WinEvent -Path [LOGS].evtx |Where-Object{$_.Message -like "*fail*"} |Format-Table -Wrap
 ```
+```powershell
+#Displays script block logging events
+Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' | Where-Object { $_.Id -eq 4104 }
+#Displays module logging events
+Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' | Where-Object { $_.Id -eq 4103 }
+```
+```powershell
+#Checks script block or module logging events for keywords, e.g. password, credential, connectionstring.
+Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' |
+    Where-Object { $_.Id -eq 4104 -and $_.Message -match "password"} |
+    Select-Object -Property TimeCreated, Message |
+    ForEach-Object {
+        $timeCreated = $_.TimeCreated
+        $message = $_.Message
+        Write-Output "Time Created: $timeCreated"
+        Write-Output "Message:"
+        Write-Output $message
+        Write-Output "------------------------------------"
+    }
+```
 
 ## **Active Directory**
 ### Domain
@@ -790,11 +812,10 @@ Clear-DnsClientCache
 ```
 
 ## **Readme.md Tasks**
-- Powershell script block logging.
-- CIM/WMIC queries.
 ```powershell
 
 ```
+- CIM/WMIC queries.
 - Commands for recyclebin,prefetch (include hashes).
   - Recycle bin command to get files from all users (SIDS), hash bin files?
 - Alternate data streams.
