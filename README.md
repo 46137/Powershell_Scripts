@@ -265,6 +265,30 @@ Get-ItemProperty HKLM:\software\microsoft\windows\currentversion\Uninstall\* |Se
 #Displays the driver information.
 Get-WindowsDriver -Online -All
 ```
+Microsoft Defender's Attack Surface Reduction\
+https://learn.microsoft.com/en-us/defender-endpoint/attack-surface-reduction-rules-reference
+```powershell
+#Displays ASR GUIDs
+Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Ids
+#Displays ASR state
+Get-MpPreference | Select-Object -ExpandProperty AttackSurfaceReductionRules_Actions
+```
+Powershell Logging (Script Block & Module)
+```powershell
+#Check if script block logging is enabled in x64.
+(Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging' -Name EnableScriptBlockLogging -ErrorAction SilentlyContinue).EnableScriptBlockLogging
+#Check if script block logging is enabled in x32.
+(Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging' -Name EnableScriptBlockLogging -ErrorAction SilentlyContinue).EnableScriptBlockLogging
+#Check if module logging is enabled in x64.
+(Get-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ModuleLogging' -Name ModuleNames -ErrorAction SilentlyContinue).ModuleNames
+#Check if module logging is enabled in x32.
+(Get-ItemProperty -Path 'HKLM:\SOFTWARE\WOW6432Node\Policies\Microsoft\Windows\PowerShell\ModuleLogging' -Name ModuleNames -ErrorAction SilentlyContinue).ModuleNames
+```
+```powershell
+New-Item -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Force
+
+Set-ItemProperty -Path "HKLM:\SOFTWARE\Wow6432Node\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging" -Name "EnableScriptBlockLogging" -Value 1 -Force
+```
 
 ## **Local Users & Groups**
 ### Users
@@ -723,7 +747,7 @@ LAPS
 Get-LapsADPassword -Identity [FQDN] -AsPlainText
 ```
 DC Sync Objects\
-Checking users for the following permission to conduct a DCSync:
+Checking users for the following permission:
 - DS-Replication-Get-Changes (Rights-GUID 1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)
 - DS-Replication-Get-Changes-All (Rights-GUID 1131f6ad-9c07-11d1-f79f-00c04fc2dcd2)
 - DS-Replication-Get-Changes-In-Filtered-Set (Rights-GUID 89e95b76-444d-4c62-991a-0facbeda640c)
@@ -731,7 +755,7 @@ Checking users for the following permission to conduct a DCSync:
 #Displays AD's distinguished name.
 (Get-ADDomain).DistinguishedName
 #Using the distinguished name to display AD objects that have DS replication permissions.
-(Get-Acl "ad:\[DistinguishedName]").Access |Where-Object {($_.ObjectType -eq "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "89e95b76-444d-4c62-991a-0facbeda640c" ) } |Select-Object IdentityReference, ObjectType
+(Get-Acl "ad:\[DISTINGUISHED NAME]").Access |Where-Object {($_.ObjectType -eq "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "89e95b76-444d-4c62-991a-0facbeda640c" ) } |Select-Object IdentityReference, ObjectType
 ```
 ### AD Groups
 ```powershell
@@ -766,6 +790,8 @@ Clear-DnsClientCache
 ```
 
 ## **Readme.md Tasks**
+- Powershell script block logging.
+- CIM/WMIC queries.
 ```powershell
 
 ```
