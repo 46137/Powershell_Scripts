@@ -722,6 +722,17 @@ LAPS
 #Displaying the LAPS password of a specific account. (Need account with read LAPS permissions)
 Get-LapsADPassword -Identity [FQDN] -AsPlainText
 ```
+DC Sync Objects
+Checking users for the following permission to conduct a DCSync:
+- DS-Replication-Get-Changes (Rights-GUID 1131f6aa-9c07-11d1-f79f-00c04fc2dcd2)
+- DS-Replication-Get-Changes-All (Rights-GUID 1131f6ad-9c07-11d1-f79f-00c04fc2dcd2)
+- DS-Replication-Get-Changes-In-Filtered-Set (Rights-GUID 89e95b76-444d-4c62-991a-0facbeda640c)
+```powershell
+#Displays AD's distinguished name.
+(Get-ADDomain).DistinguishedName
+#Using the distinguished name to display AD objects that have DS replication permissions.
+(Get-Acl "ad:\[DistinguishedName]").Access |Where-Object {($_.ObjectType -eq "1131f6aa-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "1131f6ad-9c07-11d1-f79f-00c04fc2dcd2" -or $_.ObjectType -eq "89e95b76-444d-4c62-991a-0facbeda640c" ) } |Select-Object IdentityReference, ObjectType
+```
 ### AD Groups
 ```powershell
 #Displays all AD groups.
