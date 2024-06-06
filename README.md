@@ -679,6 +679,12 @@ $forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains; $trustedD
 $forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains; $trustedDomains = Get-ADTrust -Filter * | Select-Object -ExpandProperty TargetName; $allDomains = $forestDomains + $trustedDomains; $allDomains | ForEach-Object { $domain = $_; Get-ADDomainController -Filter * -Server $domain | Select-Object @{Name='Domain';Expression={$domain}}, HostName }
 ```
 ```powershell
+$forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains | ForEach-Object { [PSCustomObject]@{ Domain = $_; Type = 'Forest' } }; 
+$trustedDomains = Get-ADTrust -Filter * | Select-Object @{Name='Domain';Expression={$_.TargetName}}, @{Name='Type';Expression={'Trust'}}; 
+$allDomains = $forestDomains + $trustedDomains; 
+$allDomains | ForEach-Object { $domain = $_.Domain; $type = $_.Type; Get-ADDomainController -Filter * -Server $domain | Select-Object @{Name='Domain';Expression={$domain}}, @{Name='Type';Expression={$type}}, HostName }
+```
+```powershell
 #Displays default domain password policy. (Compare to ISM)
 Get-ADDefaultDomainPasswordPolicy
 ```
