@@ -673,7 +673,8 @@ Get-ADDomain
 (Get-ADForest).forestmode
 ```
 ```powershell
-Get-ADForest | Select-Object -ExpandProperty Domains | ForEach-Object { Get-ADDomainController -Filter * -Server $_ | Select-Object -ExpandProperty HostName } + (Get-ADTrust -Filter * | ForEach-Object { Get-ADDomainController -Filter * -Server $_.TargetName | Select-Object -ExpandProperty HostName })
+Import-Module ActiveDirectory; $forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains; $trustedDomains = Get-ADTrust -Filter * | Select-Object -ExpandProperty TargetName; $allDomains = $forestDomains + $trustedDomains; $allDomains | ForEach-Object { Get-ADDomainController -Filter * -Server $_ | Select-Object -ExpandProperty HostName }
+
 ```
 ```powershell
 #Displays default domain password policy. (Compare to ISM)
