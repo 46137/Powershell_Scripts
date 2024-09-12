@@ -29,6 +29,7 @@ This collection of commands & scripts are being developed to aid a cyber analyst
   - [Shares](#shares)
   - [AD Sinkhole](#ad-sinkhole)
   - [SMTP](#smtp)
+- [Bypass](#bypass)
 - [Tasks](#readmemd-tasks)
 
 ## **Powershell Overview**
@@ -699,6 +700,16 @@ Get-ADComputer -Filter {OperatingSystem -like "*"} -Properties Name, OperatingSy
 #Or
 Get-DnsServerResourceRecord -ZoneName [DNS.FQDN] -rrtype "A"
 ```
+NTDS
+```powershell
+#Displays the NTDS.dit location on the AD.
+Get-Item HKLM:\SYSTEM\CurrentControlSet\Services\NTDS\Parameters\
+```
+```powershell
+#Entering the instance of NTDS, switching to IFM mode and creating a full backup to C:Temp.
+powershell "ntdsutil.exe 'ac i ntds' 'ifm' 'create full C:\Temp' q q"
+```
+
 
 ### AD Users
 ```powershell
@@ -717,6 +728,7 @@ Get-ADUser -Filter {Name -like "*[NAME]*"}
 #Or
 Get-ADUser -Filter {SamAccountName -like "A*"}
 ```
+Privileged Accounts
 ```powershell
 #Privileged accounts via users.
 Get-ADUser -Filter {(admincount -gt 0) -or (samaccountname -like [KEYWORD])} | Select-Object Name, SamAccountName, Enabled, AccountExpirationDate
@@ -814,6 +826,8 @@ LAPS
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'}).SamAccountName
 #Displays accounts with LAPS disabled.
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -notlike '*'}).SamAccountName
+#Displays misconfigured LAPS accounts & passwords that are in plain text.
+Get-ADComputer -Filter {ms-mcs-admpwd -like "*"} -Properties * |Select-Object SamAccountName, ms-mcs-admpwd
 #Displaying the LAPS password of a specific account. (Need account with read LAPS permissions)
 Get-LapsADPassword -Identity [FQDN] -AsPlainText
 ```
@@ -868,6 +882,23 @@ Clear-DnsClientCache
 ```powershell
 #Sending an email through a SMTP server to see if it's allowed without authentication.
 Send-MailMessage -From 'from@email.address' -To 'to@email.address' -Subject 'test mail' -Body 'test email' -SMTPServer [SERVERNAME]
+```
+## Bypass
+Macro bypass to run powershell.exe
+```
+Sub RunExecutable()
+    Dim objShell As Object
+    Dim exePath As String
+    
+    ' Path to your executable file
+    exePath = "C:\Path\To\powershell.exe -executionpolicy bypass"
+    
+    ' Create a Shell object
+    Set objShell = CreateObject("WScript.Shell")
+    
+    ' Run the executable file
+    objShell.Run exePath, 1, False
+End Sub
 ```
 
 ## **Readme.md Tasks**
