@@ -22,12 +22,13 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Persistence Methods](#Persistence-methods)
 - [Events](#events)
 - [Active Directory](#active-directory)
-  - [Domain](#domain)
+  - [Domain/Forest](#domainforest)
   - [AD Users](#ad-users)
   - [AD Vulnerabilities](#ad-vulnerabilities)
   - [AD Groups](#ad-groups)
   - [Shares](#shares)
   - [AD Sinkhole](#ad-sinkhole)
+  - [SMTP](#smtp)
 - [Tasks](#readmemd-tasks)
 
 ## **Powershell Overview**
@@ -549,7 +550,10 @@ Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyConti
 (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
 ```
 ### **Decoding**
-
+```powershell
+#Decimal decode
+Write-Output (-join ("72 101 108 108 111 32 87 111 114 108 100" -split " " | ForEach-Object { [char][int]$_ }))
+```
 
 ## **Persistence Methods**
 ### Scheduled Tasks
@@ -668,7 +672,7 @@ Get-WinEvent -LogName 'Microsoft-Windows-PowerShell/Operational' |
 ```
 
 ## **Active Directory**
-### Domain
+### Domain/Forest
 ```powershell
 #Displays the information on the domain.
 Get-ADDomain
@@ -678,16 +682,10 @@ Get-ADDomain
 (Get-ADForest).forestmode
 ```
 ```powershell
-$forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains; $trustedDomains = Get-ADTrust -Filter * | Select-Object -ExpandProperty TargetName; $allDomains = $forestDomains + $trustedDomains; $allDomains | ForEach-Object { Get-ADDomainController -Filter * -Server $_ | Select-Object -ExpandProperty HostName }
-```
-```powershell
-$forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains; $trustedDomains = Get-ADTrust -Filter * | Select-Object -ExpandProperty TargetName; $allDomains = $forestDomains + $trustedDomains; $allDomains | ForEach-Object { $domain = $_; Get-ADDomainController -Filter * -Server $domain | Select-Object @{Name='Domain';Expression={$domain}}, HostName }
-```
-```powershell
-$forestDomains = Get-ADForest | Select-Object -ExpandProperty Domains | ForEach-Object { [PSCustomObject]@{ Domain = $_; Type = 'Forest' } }; 
-$trustedDomains = Get-ADTrust -Filter * | Select-Object @{Name='Domain';Expression={$_.TargetName}}, @{Name='Type';Expression={'Trust'}}; 
-$allDomains = $forestDomains + $trustedDomains; 
-$allDomains | ForEach-Object { $domain = $_.Domain; $type = $_.Type; Get-ADDomainController -Filter * -Server $domain | Select-Object @{Name='Domain';Expression={$domain}}, @{Name='Type';Expression={$type}}, HostName }
+#Displays domain trust information.
+Get-ADTrust -Filter * | Select-Object Name, TrustType, TrustDirection, TrustAttributes
+#Or
+(Get-ADForest).Domains | ForEach-Object {Get-ADDomain $_ | Select-Object Name, DomainMode, ParentDomain, Forest, DomainControllers, ManagedBy, DistinguishedName}
 ```
 ```powershell
 #Displays default domain password policy. (Compare to ISM)
@@ -727,6 +725,8 @@ Get-ADObject -Filter * -SearchBase '[DISTINGUISHED NAME]' -Properties *
 (Get-ADUser -Identity [SAMACCOUNTNAME] -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name
 #Displays the groups of a domain user. (Slow)
 Get-ADPrincipalGroupMembership lhead_ctf |Select-Object Name
+#Displays the workstations specific users have access to login to.
+Get-ADUser -Filter * -Properties LogonWorkstations | Where-Object { $_.LogonWorkstations -ne $null } | Select-Object SamAccountName, LogonWorkstations
 #Enable, disable & remove.
 Enable-ADAccount -identity '[DISTINGUISHED NAME]'
 Disable-ADAccount -identity '[DISTINGUISHED NAME]'
@@ -815,7 +815,12 @@ net.exe use
 #Displays the share folder permissions.
 Get-Acl -Path \\[SHARE]\ADMIN$\ |Format-List
 ```
-
+```powershell
+#View share drive via cmd.
+pushd \\[SHARE]\
+#To exit out of share.
+popd
+```
 ### AD Sinkhole
 ```powershell
 #Adding DNS block, from AD.
@@ -826,6 +831,11 @@ set-dnsserverqueryresolutionpolicy -name "BlackholePolicy" -action IGNORE -FQDN 
 get-dnsserverqueryresolutionpolicy
 #Clear local cache on all/effected hosts.
 Clear-DnsClientCache
+```
+### SMTP
+```powershell
+#Sending an email through a SMTP server to see if it's allowed without authentication.
+Send-MailMessage -From 'from@email.address' -To 'to@email.address' -Subject 'test mail' -Body 'test email' -SMTPServer [SERVERNAME]
 ```
 
 ## **Readme.md Tasks**
