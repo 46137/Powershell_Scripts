@@ -718,15 +718,47 @@ Get-ADUser -Filter {Name -like "*[NAME]*"}
 Get-ADUser -Filter {SamAccountName -like "A*"}
 ```
 ```powershell
-#Specific user queries.
+#Privileged accounts via users.
+Get-ADUser -Filter {(admincount -gt 0) -or (samaccountname -like [KEYWORD])} | Select-Object Name, SamAccountName, Enabled, AccountExpirationDate
+```
+```powershell
+#Privileged accounts via groups.
+$PrivGroup1 = Get-ADGroupMember -Identity [PRIVGROUP1]
+$PrivGroup2 = Get-ADGroupMember -Identity [PRIVGROUP2]
+$UniqueMembers = ($PrivGroup1 + $PrivGroup2 |Select-Object -Unique) |Where-Object {$_.objectClass -eq "user" -and (Get-ADUser -Identity $_.distinguishedName).Enabled}
+$UniqueMembers | Get-ADUser -Property AccountExpirationDate | Select-Object Name, SamAccountName, Enabled, AccountExpirationDate
+```
+```powershell
+#Privileged accounts via groups. Lastlogon >45 days.
+$PrivGroup1 = Get-ADGroupMember -Identity [PRIVGROUP1]
+$PrivGroup2 = Get-ADGroupMember -Identity [PRIVGROUP2]
+$UniqueMembers = ($PrivGroup1 + $PrivGroup2 |Select-Object -Unique) |Where-Object {$_.objectclass -eq "user" -and (Get-ADUser -Identity $_.distinguishedName).Enabled}
+$UniqueMembers |Get-ADUser -Properties * | Where-Object {$_.Enabled -eq $True -and $_.LastLogonDate -lt (Get-Date).AddDays(-45) -and $_.LastLogonDate -ne $null} | Select-Object SamAccountName,LastLogonDate |Sort-Object lastlogondate
+
+```powershell
+#Privileged accounts via groups. ExpiryDate >12 months.
+$ExpectedExpiryDate = (Get-Date).AddMonths(12)
+$PrivGroup1 = Get-ADGroupMember -Identity [PRIVGROUP1]
+$PrivGroup2 = Get-ADGroupMember -Identity [PRIVGROUP2]
+$UniqueMembers = ($PrivGroup1 + $PrivGroup2 |Select-Object -Unique) |Where-Object {$_.objectclass -eq "user" -and (Get-ADUser -Identity $_.distinguishedName).Enabled}
+$UniqueMembers |Get-ADUser -Properties AccountExpirationdate |Where-Object{$_.AccountExpirationDate -Like '' -Or ($_.AccountExpirationDate -gt $ExpectedExpiryDate)} |Select-Object SAMAccountName, AccountExpirationDate
+```
+Specific User Queries
+```powershell
 #Displays all properties of a domain user.
 Get-ADObject -Filter * -SearchBase '[DISTINGUISHED NAME]' -Properties *
+```
+```powershell
 #Displays the groups of a domain user.
 (Get-ADUser -Identity [SAMACCOUNTNAME] -Properties MemberOf).MemberOf | Get-ADGroup | Select-Object -ExpandProperty Name
 #Displays the groups of a domain user. (Slow)
 Get-ADPrincipalGroupMembership lhead_ctf |Select-Object Name
+```
+```powershell
 #Displays the workstations specific users have access to login to.
 Get-ADUser -Filter * -Properties LogonWorkstations | Where-Object { $_.LogonWorkstations -ne $null } | Select-Object SamAccountName, LogonWorkstations
+```
+```powershell
 #Enable, disable & remove.
 Enable-ADAccount -identity '[DISTINGUISHED NAME]'
 Disable-ADAccount -identity '[DISTINGUISHED NAME]'
