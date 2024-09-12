@@ -531,6 +531,16 @@ Get-FileHash -Algorithm SHA256 [PATH\TO\FILE]
 Compress-Archive -Path [PATH\TO\FILE] -DestinationPath [PATH\NAME.ZIP]
 ```
 ```powershell
+#Displays Snaffler locations not included in the Snaffler_all data.
+$snaffler_user = Get-Content -Path [PATH\TO\FILE]
+$snaffler_all = Get-Content -Path [PATH\TO\FILE]
+foreach ($line in $snaffler_user){
+    if (-not ($snaffler_all -contains $line)) {
+    write-output $line
+    }
+} 
+```
+```powershell
 #Displays USB running connections.
 Get-ItemProperty -Path HKLM:\system\currentcontrolset\enum\USBSTOR\*\* |Select-Object -Property ClassGUID,FriendlyName
 #Displays USB connections.
@@ -929,7 +939,13 @@ Ivanti Bypass
 - Unzip to view configuration.xml
 - Look for approved locations.
 
-
+Application Control Bypass
+```powershell
+#Extracts .exe file paths from registry settings related to Software Restriction Policies (SRP) and AppLocker.
+Get-ChildItem -Path HKLM:Software\Policies\Microsoft\Windows\SrpV2 -Recurse |Get-ItemProperty | Select-Object Value | Out-File format.txt 
+#Looks for allowed actions and specific regex patterns.
+Get-Content format.txt | Select-String  'Action="Allow"' | Select-String -Pattern 'FilePathCondition Path="(\*\\.*\w{0,20}.exe)"'  | Select-String -Pattern 'Path="(\*\\.*\w{0,20}.exe)"' | ForEach-Object {$_ -replace '.*Path="(\*\\.*\w{0,20}.exe)".*', '$1'} 
+```
 
 ## **Readme.md Tasks**
 ```powershell
