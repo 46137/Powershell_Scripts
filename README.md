@@ -801,13 +801,14 @@ Get-ADUser -Filter {DoesNotRequirePreAuth -eq $true} -Properties DoesNotRequireP
 ```
 userPasswords
 ```powershell
-#Displays plaintext password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
+#Displays plain-text password stored in the UserPassword attribute, decode with cyberchef. Was deprecated in server 2003 for the unicodePwd attribute.
 Get-ADUser -Filter {UserPassword -like "*"} -Properties UserPassword |Select-Object SamAccountName,UserPassword
 ```
-cPasswords
+SYSVOL
 ```powershell
 #Displays pattern matched results in domain policy files.
 #E.g. 'cpassword' which is a component of AD's group policy preference (GPP) that allows admins to set passwords via group policy.
+#E.g. 'autologon' xml files which can contain plain-text credentials.
 Get-ChildItem -Recurse -Path \\[DOMAIN]\SYSVOL\[FQDN]\Policies\ -Include *.xml -ErrorAction SilentlyContinue |Select-String -Pattern "password"
 #Decrypt cpasswords with the following Powersploit module.
 Import-Module Get-DecryptedCpassword
@@ -826,7 +827,7 @@ LAPS
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -like '*'}).SamAccountName
 #Displays accounts with LAPS disabled.
 (Get-ADComputer -Filter {ms-MCS-AdmPwdExpirationTime -notlike '*'}).SamAccountName
-#Displays misconfigured LAPS accounts & passwords that are in plain text.
+#Displays misconfigured LAPS accounts & passwords that are in plain-text.
 Get-ADComputer -Filter {ms-mcs-admpwd -like "*"} -Properties * |Select-Object SamAccountName, ms-mcs-admpwd
 #Displaying the LAPS password of a specific account. (Need account with read LAPS permissions)
 Get-LapsADPassword -Identity [FQDN] -AsPlainText
@@ -867,6 +868,28 @@ pushd \\[SHARE]\
 #To exit out of share.
 popd
 ```
+Quick Wins
+```powershell
+#Displays the config file for MRemoteNG application. Can contain embedded credentials.
+(Get-ChildItem \\[SHARE]]\ -Force -Recurse -ErrorAction SilentlyContinue -Filter "confCons.xml").FullName
+```
+```powershell
+#Displays Keypass databases and key files.
+(Get-ChildItem \\[SHARE]]\ -Force -Recurse -ErrorAction SilentlyContinue -Include @("*.kdbx","*.key*")).FullName
+```
+```powershell
+#Displays powershell scripts that contain keywords.
+$ps1Files = Get-ChildItem -Path \\[SHARE]\ -Force -Recurse -Filter "*.ps1" -ErrorAction SilentlyContinue
+$keywords = @("password", "username", "credential", "login", "passwd")
+foreach ($file in $ps1Files) {
+    $content = Get-Content $file.FullName -ErrorAction SilentlyContinue
+    foreach ($keyword in $keywords) {
+        if ($content -match $keyword) {
+            Write-Host "Keyword '$keyword' found in script: $($file.FullName)"
+        }
+    }
+}
+```
 ### AD Sinkhole
 ```powershell
 #Adding DNS block, from AD.
@@ -900,6 +923,13 @@ Sub RunExecutable()
     objShell.Run exePath, 1, False
 End Sub
 ```
+Ivanti Bypass
+- C:\ProgramData\AppSense\Application Manager\Configuration\configuration.aamp
+- Copy to new location and rename to zip.
+- Unzip to view configuration.xml
+- Look for approved locations.
+
+
 
 ## **Readme.md Tasks**
 ```powershell
