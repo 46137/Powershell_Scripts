@@ -16,7 +16,9 @@ This collection of commands & scripts are being developed to aid a cyber analyst
 - [Local Users & Groups](#local-users--groups)
 - [IP & Network Connections](#ip--network-connections)
 - [Processes & Services](#processes--services)
-- [Files](#files)
+- [Data](#data)
+  - [Files](#files)
+  - [Decoding](#decoding)
 - [Persistence Methods](#Persistence-methods)
 - [Events](#events)
 - [Active Directory](#active-directory)
@@ -454,8 +456,8 @@ sc.exe delete [NAME]
 #List port numbers for well known services.
 Get-Content C:\Windows\System32\drivers\etc\services
 ```
-
-## **Files**
+## **Data**
+### **Files**
 Common paths to look at for malicious files:
 - C:\Windows\Temp
 - C:\Users\Administrator\Downloads
@@ -546,6 +548,9 @@ Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyConti
 #Gets hashes of recycle bin files of the current user's SID.
 (Get-ChildItem -Path 'C:\$Recycle.Bin' -Recurse -Force -ErrorAction SilentlyContinue).FullName |ForEach-Object {Get-FileHash -Algorithm SHA1 -Path $_}
 ```
+### **Decoding**
+
+
 ## **Persistence Methods**
 ### Scheduled Tasks
 ```powershell
